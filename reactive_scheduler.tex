@@ -99,7 +99,7 @@ TODO - The quadrotor basics
 The specific case study we used to test our concept is the ability of fly thru windows, this task require a very stable hovering in front of the window.
 We implement Autonomous controller for that task, and we evaluate the performance in terms of the horizontal linear axis parallel to the window surface, as this is the most critical axis in this task, this axis noted by $x$ see Figure~\ref{fig:window axis ???}.
 
-%TODO - controller and vision algorithms (appendix?)
+%controller and vision algorithms (appendix?)
 The drone consist of Raspberry pi with navio~\cite{??? raspberry, navio} and is controlled by modified ArduPilot~\cite{??? APM}.
 We implement standard PID~\cite{??? PID} controller that regulate the position and attitude of the drone relatively to the window.
 We used inertial sensors (Gyroscope and Accelerometer) for attitude control relative to earth, and we use camera~\cite{??? picam} and simple image processing for position and attitude relatively to the window~\ref{sec:visionAlgo ???}.
@@ -107,6 +107,7 @@ The image processing have few different operation modes which have different ima
 
 %TODO - state estimator, Kalman approximation (what should be explained here?)
 %TODO - http://robottini.altervista.org/kalman-filter-vs-complementary-filter
+%TODO - maybe we can cite this: http://proyectos.ciii.frc.utn.edu.ar/cuadricoptero/export/262a5075a7aa6575102f84fcdc2ee39ecab3c530/documentacion/articulo_case_filtro_comp/referencias/A%20comparison%20of%20complementary%20and%20kalman%20filtering.pdf
 As shown in the simulation at Section~\ref{sec:simulation} we should use Kalman filter estimator, in our case we have non-linear system... %TODO - continue
 For simplicity, inspiring from Kalman filter~\cite{??? kalman}, we use two steps estimator that \textit{predict} the current state evolved from the previous state using the system model ($\hat{x_{k|k-1}}$) and then \textit{update} the prediction with current state measurement from image ($z_k$).
 The result estimation ($\hat{x_{k|k}}$) is weighted average: 
@@ -115,7 +116,16 @@ the $K$ gain is defined different for each resolution for achieving estimation i
 %TODO - need to explane exactly which variables we mesure or what is the state vector??
 
 \subsubsection{specification automatons}
-TODO - the schedulers we tested
+%TODO - the schedulers we tested
+
+TODO - only High vs only Low (with performances results)
+
+TODO - error ($y_{k|k}$) derived schedulers
+
+TODO - position ($x_{k|k}$) derived schedulers
+
+TODO - complex / agregated schedulers
+
 
 \subsubsection{results}
 TODO - graphs and tables
