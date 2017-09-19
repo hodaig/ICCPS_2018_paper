@@ -73,8 +73,24 @@ Sections go here.
 \label{sec:simulation}
 %TODO - show some matlab simulations of hybrid systems.
 
+\section{Proposed Methodology}
+\begin{enumerate}
+    
+    \item \textbf{Controller design:} Based on the separation principle, we propose to design the controller to achieve the control objectives assuming a perfect observation. In practice, this may not be feasible because controller designs such as PID require a system to experiment with. In this case, as demonstrated in the case-study below (see Section~\ref{sec:caseStady}), we propose to work with one of the observation modes. If the system is close to linear, this should result with a near optimal design.
+    
+    \item \textbf{Observers design:} Specification of sensor modes and observers design
+    
+    \item \textbf{Performance analysis:} Now, we can perform some experiments with the different observer modes and analyze transient behaviors. Specifically, as shown in the case study~\ref{sec:caseStady_analysis}, we can measure how long it takes for the error to accumulate after switching to a lesser observation mode and formulate how this error affects the control objectives.
+
+    \item \textbf{Scheduling automata design:} Base on the analysis we can specify the resource scheduling requirements in the form of \textit{specification automaton}. The goal is to design flexible specification that allow dynamic scheduling in order to adapt the environment and the system state, this will improve the system efficient.
+
+\end{enumerate}
+
+
 \section{Application to Autonomous Quad-rotor Flying In-Door}
+\label{sec:caseStady}
 % overview of why we use vision example
+
 
 TODO - The quadrotor basics
 
@@ -82,6 +98,8 @@ TODO - The quadrotor basics
 The specific case study we used to test our concept is the ability of fly thru windows, this task require a very stable hovering in front of the window.
 We implement Autonomous controller for that task, and we evaluate the performance in terms of the horizontal linear axis parallel to the window surface, as this is the most critical axis in this task, this axis noted by $x$ see Figure~\ref{fig:window axis ???}.
 
+\subsection{Controller Design}
+%TODO - split controller & observer
 %controller and vision algorithms (appendix?)
 The drone consist of Raspberry pi with navio~\cite{??? raspberry, navio} and is controlled by modified ArduPilot~\cite{??? APM}.
 We implement standard PID~\cite{??? PID} controller that regulate the position and attitude of the drone relatively to the window.
@@ -98,16 +116,18 @@ $ \hat{x_{k|k}} = K \hat{x_{k|k-1}} + (1-K) z_k $,
 the $K$ gain is defined different for each resolution for achieving estimation in each resolution.
 %TODO - need to explane exactly which variables we mesure or what is the state vector??
 
-\subsection{specification automatons}
-%TODO - the schedulers we tested
+\subsection{Analysis and Specification Automata}
 
-The performances of the system is measured by 
+The objective of the system is to maintain stable hovering in front of the window, and the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:window axis ???}), and in other hand we gauge efficiency by the amount of processing resources is used by the heavy observation tasks (CPU percentage).
 
-TODO - only High vs only Low (with performances results)
+Analyzing the test results showing in Table~\ref{tab:res ???} we see that High quality observation mode provide 0.4 meter error tolerance meaning we can fly this mode in 1.2 meter wide corridor~\footnote{Experiments was done with 0.4 meter wide quad-rotor}, with the cost of 30\% CPU usage. 
+With adaptive scheduling specification we lower the CPU usage without significant worsening of High quality performances.
 
-TODO - error ($y_{k|k}$) derived schedulers
+%TODO - error ($y_{k|k}$) derived schedulers
+From the Low quality experiment graph we can see that measurement post-fit residual ($\tilde{y}_{k|k}$) is accumulate proportional to the deviation from the center of $x$ axis, and we can use $\tilde{y}_{k|k}$ vales to predict 
 
-TODO - position ($x_{k|k}$) derived schedulers
+
+TODO - position ($x_{k|k}$)  derived schedulers
 
 TODO - complex / agregated schedulers
 
