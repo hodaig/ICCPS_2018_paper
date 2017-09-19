@@ -87,22 +87,34 @@ Sections go here.
 \end{enumerate}
 
 
-\section{Application to Autonomous Quad-rotor Flying In-Door}
+%\section{Application to Autonomous Quad-rotor Flying In-Door}
+\section{Application: Stabilizing a quadrotor in front of a window}
 \label{sec:caseStady}
 % overview of why we use vision example
 
-
-TODO - The quadrotor basics
-
 %TODO - Window test case problem
-The specific case study we used to test our concept is the ability of fly thru windows, this task require a very stable hovering in front of the window.
-We implement Autonomous controller for that task, and we evaluate the performance in terms of the horizontal linear axis parallel to the window surface, as this is the most critical axis in this task, this axis noted by $x$ see Figure~\ref{fig:window axis ???}.
+The case study we used to test our concept is the development of a controller that stabilizes a quadrotor~\cite{?} in front of a window.
+We implement an autonomous controller for that task and evaluated its performance.
+
+The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increase the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance.
+
+\subsection{Observer Design}
+We first implemented an observer that gets the positions of the widow corners and use them to estimate the position of quadrotor relative to the window. 
+
+% Add: (1) Equations of the Vd etc. (2) Explain the complementary filer we used. (3) Explain how the filter we used is a "simplified Kalman filter".
+
+\subsection{Controller Design}
+We used a simple Proportional Integral Derivative (PID) controller that we tuned by experimenting with the quadrotor in our lab. Based on the separation principle~\cite{?}, we tuned the parameters of our controller only with the highest resolution observer and used them for all the other observers without any modification.
+
+
+% in terms of the horizontal linear axis parallel to the window surface, as this is the most critical axis in this task, this axis noted by $x$ see Figure~\ref{fig:window axis ???}.
+
 
 \subsection{Controller Design}
 %TODO - split controller & observer
 %controller and vision algorithms (appendix?)
-The drone consist of Raspberry pi with navio~\cite{??? raspberry, navio} and is controlled by modified ArduPilot~\cite{??? APM}.
-We implement standard PID~\cite{??? PID} controller that regulate the position and attitude of the drone relatively to the window.
+The drone is controlled by a Raspberry pi with the navio~\cite{??? raspberry, navio} that runs a modified ArduPilot~\cite{??? APM} software.
+We implement standard PID~\cite{aastrom2006advanced} controller that regulates the position and attitude of the drone relative to the window.
 We used inertial sensors (Gyroscope and Accelerometer) for attitude control relative to earth, and we use camera~\cite{??? picam} and simple image processing for position and attitude relatively to the window~\ref{sec:visionAlgo ???}.
 The image processing have few different operation modes which have different image resolution, better resolution image produce more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}, for simplicity we examine only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
 
@@ -118,9 +130,9 @@ the $K$ gain is defined different for each resolution for achieving estimation i
 
 \subsection{Analysis and Specification Automata}
 
-The objective of the system is to maintain stable hovering in front of the window, and the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:window axis ???}), and in other hand we gauge efficiency by the amount of processing resources is used by the heavy observation tasks (CPU percentage).
+The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:window axis ???}). Our goal is to achieve maximum performance with minimal amount of processing (CPU percentage). The main consumer of computation resources in this system is the heavy observation tasks.
 
-Analyzing the test results showing in Table~\ref{tab:res ???} we see that High quality observation mode provide 0.4 meter error tolerance meaning we can fly this mode in 1.2 meter wide corridor~\footnote{Experiments was done with 0.4 meter wide quad-rotor}, with the cost of 30\% CPU usage. 
+Analyzing the test results shown in Table~\ref{tab:res ???} we see that High quality observation mode provide 0.4 meter error tolerance meaning we can fly this mode in 1.2 meter wide corridor\footnote{Experiments was done with 0.4 meter wide quad-rotor}, with the cost of 30\% CPU usage. 
 With adaptive scheduling specification we lower the CPU usage without significant worsening of High quality performances.
 
 %TODO - error ($y_{k|k}$) derived schedulers
@@ -134,9 +146,10 @@ TODO - complex / agregated schedulers
 TODO - gyro derived??
 
 
-\subsubsection{results}
+\subsection{Results}
 TODO - graphs and tables
 
+\section{Experiment setup}
 
 \section{Conclusions}
 Conclusion goes here.
