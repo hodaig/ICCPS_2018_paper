@@ -2,7 +2,7 @@
 
 \begin{document}
 
-\title{Reactive  Scheduler }
+\title{Reactive Scheduling of Computational \\ Resources in Control Systems}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -58,12 +58,16 @@
 \maketitle
 \begin{abstract}
 
+\end{abstract}
+
+\section{Introduction}
+
 %TODO - hodai - just copy from the thesis/proposal, need to rewrite
 Today's computer power allows for consolidation of controllers towards systems where a single computer regulates many control loops, each with its varying needs of computation resources.
-This brings two research challenges that we intend to attack in this thesis:
+This brings two research challenges that we tackle in this work: 
 \begin{itemize}
-    \item How to schedule control tasks in order to achieve good performance in terms of control measures (overshoot, convergence time, etc.), within the still limited computation resources?
-    \item What is a good interface for co-design of scheduling and control?
+	\item How to schedule control tasks in order to achieve good performance in terms of control measures (overshoot, convergence time, etc.), within the still limited computation resources?
+	\item What is a good interface for co-design of scheduling and control?
 \end{itemize}
 
 Desktop type operating systems, like Windows and Linux, schedule for computational efficiency but do not allow for worst-case performance guarantees. Real-time operating systems, on the other hand, sacrifice some efficiency for timing predictability, but the type of timing guarantees that such systems provide usually are not directly guaranteeing the control performance of the system. 
@@ -71,12 +75,6 @@ When using such operating systems for control, engineers usually apply controlle
 
 In this work we show how to combine the efficiency of dynamic scheduling with the predictability of real-time scheduling, in a way that is more suitable for control systems then periods and deadlines.
 We show that applying control computations at dynamically adjustable periodic, and with variable computational demands, based on real-time information, allows for better utilization of the computational resources and therefor better control performance.
-
-\end{abstract}
-
-\section{Introduction}
-
-Sections go here.
 
 \section{Architecture: Automata Based Scheduler}
 
