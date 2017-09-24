@@ -1,6 +1,104 @@
 \documentclass{sig-alternate-ipsn13}
 
+
+\usepackage{url}
 \usepackage{cite}
+\usepackage{subfigure}
+\usepackage{float}
+\usepackage{pdfpages}
+
+%%%%%%%% Package for source-code listing %%%%%%%%%%%%
+\usepackage{textcomp,listings}
+\definecolor{javared}{rgb}{0.6,0,0} % for strings
+\definecolor{javagreen}{rgb}{0.25,0.5,0.35} % comments
+\definecolor{javapurple}{rgb}{0.5,0,0.35} % keywords 
+
+\lstset{
+	language=Java,
+	frame=lines,
+	captionpos=b,
+	basicstyle=\color{blue!30!black!90!green} \ttfamily, % print whole listing small
+	keywordstyle=\color{javapurple}\bfseries,%\underbar, underlined bold black keywords
+	identifierstyle=, % nothing happens
+	commentstyle=\color{javagreen}, % white comments
+	stringstyle=\color{javared}, % type for strings
+	showstringspaces=false, % no special string spaces
+	mathescape=true, % allow math typesetting in listings
+	upquote=true,
+}
+%%%%%%%% Package for source-code listing %%%%%%%%%%%%
+
+
+%%%%%%%% Packages for drawing diagrams %%%%%%%%%%%%%%%
+\usepackage{tikz,ifthen}
+\usetikzlibrary{arrows,
+	%trees,backgrounds,automata,shapes,snakes,plotmarks,fit,calc,positioning,shadows
+}
+\tikzstyle{block}=[rectangle, draw, thin, inner sep=3pt, text centered, 
+%drop shadow, 
+fill=orange!20!yellow!20] 
+\tikzstyle{pre}=[<-,shorten <=1pt,>=stealth']
+\tikzstyle{post}=[->,shorten >=1pt,>=stealth'] 
+\tikzstyle{bi}=[<->,shorten >=1pt,shorten <=1pt,>=stealth'] 
+\tikzstyle{every initial by arrow}=[initial text={},initial distance=1em,post]
+\tikzstyle{every state}=[minimum size=0.4cm,drop shadow,fill=orange!20!yellow!20]
+\tikzstyle{transition}= [post,shorten >=1pt,node distance=2cm, inner sep=2pt,bend angle=20]
+\tikzstyle{box}=[rectangle,draw=black, thick, inner sep=3pt, text centered]
+%%%%%%%% Package for drawing diagrams %%%%%%%%%%%%%%%
+
+\newcommand\esti{{\lstinline'estimate'}}
+\newcommand\simu{{\lstinline'simulate'}}
+\renewcommand\j[1]{{\lstinline'#1'}}
+
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{MnSymbol}
+
+\RequirePackage{pgf,pgffor}
+
+
+\usepackage[mathcal]{euscript}
+%%% END LaTeX-Packages ----------------------------------
+
+
+\usepackage{setspace}
+\newcommand\tuple[1]{\langle #1 \rangle}
+
+\newcommand\sSF[1]{$\Diamond$\footnote{SF: \sout{#1}}}
+\newcommand\sIL[1]{$\Diamond$\footnote{IL: \sout{#1}}}
+\newcommand\sMA[1]{$\Diamond$\footnote{MA: \sout{#1}}}
+\newcommand\sGW[1]{$\Diamond$\footnote{GW: \sout{#1}}}
+
+
+\newcommand\SF[1]{$\bigstar$\footnote{SF: #1}}
+\newcommand\IL[1]{$\bigstar$\footnote{IL: #1}}
+\newcommand\MA[1]{$\bigstar$\footnote{MA: #1}}
+\newcommand\GW[1]{$\bigstar$\footnote{GW: #1}}
+
+\newcommand\R{{\mathbb R}}
+\newcommand\N{{\mathbb N}}
+\newcommand\must{$\mathtt{must}$}
+\newcommand\bad{$\mathtt{bad}$}
+\newcommand\code[1]{{\small \sf #1}}
+
+%%% LaTeX definitions -----------------------------------------
+\newtheorem{thm}{Theorem}
+\newtheorem{dfn}[thm]{Definition}
+\newtheorem{con}[thm]{Construction}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{claim}[thm]{Claim}
+
+\DeclareMathOperator*{\guard}{guard}
+\DeclareMathOperator*{\sensor}{sen}
+\DeclareMathOperator*{\actuator}{act}
+
+\newcommand{\mathsym}[1]{{}}
+\newcommand{\unicode}[1]{{}}
+
+\newcommand{\M}{{\mathcal{M}}}
+%%% END own LaTeX definitions ---------------------------
+
 
 \begin{document}
 
@@ -83,7 +181,179 @@ In this paper we present an approach, a proof-of-concept tool, and a case-study 
 
 \section{Architecture: Automata Based Reactive Scheduler}
 
-Sections go here.
+As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a class in, say C++, accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., the automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers.
+
+For scheduling tasks within a slot, we adopt the Logical Execution Time (LET)
+abstraction~\cite{DBLP:journals/pieee/HenzingerHK03} that allows deterministic
+external interface even when the underlying physical execution layer introduces
+bounded non-determinism.
+
+The relation between logical and physical task execution is depicted Figure~\ref{fig:LET} (adopted
+from~\cite{DBLP:conf/lctrts/FarcasFPT05}). The diagram depicts an execution of one task in one
+logical execution slot.  Logically, the task is released at the beginning of the slot and terminates
+at the end of it, i.e., the task processes the inputs captured at the release time and its output
+are only made available to the outside world at the logical termination time. The actual execution,
+as shown in the figure, may start and finish anywhere in the logical execution slot and the
+execution may be interrupted by higher priority tasks. However, the external interface remains
+deterministic provided only that all tasks always finish within logical execution slots.
+
+
+%%%%%%%%%%%%%%%%%%%%%  LET %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}[htb]
+	\centering
+	
+	\def\h{.7cm}
+	\def\w{5.5cm}
+
+	\begin{tikzpicture}[minimum height=\h,scale=0.8, every node/.style={scale=0.8}]      
+	\node [block,minimum width=\w] (TI) {Task Invocation};
+	\node [matrix] at (-.1cm,-\h) {\node [block] {running}; & \node [block,minimum width=.7cm,fill=yellow!10] {waiting}; & \node [block] {running}; \\}; 
+	
+	\draw [post] (-\w/2,1.2cm) -- (-\w/2,\h/2);
+	\node at (-\w/2,1.4cm) {\lstinline!readInputs!};
+	
+	\draw [pre] (\w/2,1.2cm) -- (\w/2,\h/2);
+	\node at (\w/2,1.4cm) {\lstinline!writeOutputs!};
+	
+	\draw [bi] (-\w/2,\h/4 + .5cm) -- node [above] {Logical Execution Slot} (\w/2,\h/4 + .5cm);
+	
+	\draw [post,thick] (-\w/2-1cm,-\h/2) -- node [above,at end] {Time}  node [above, at start] {Logical}  node [below, at start] {Actual}  (\w/2+.7cm,-\h/2);
+	\end{tikzpicture}
+	
+	\caption{Execution of a task in an execution slot.}
+	\label{fig:LET}
+\end{figure}
+
+
+Diverging from the way LET is applied in other
+architectures~(c.f.~\cite{DBLP:journals/pieee/HenzingerHK03,DBLP:conf/lctrts/AuerbachBIKRRT07}),
+our architecture executes a dynamic assignment of tasks to logical execution slots.  Specifically, the set
+of tasks that run in each logical execution slot is chosen from the composition of all resource
+specifications of the components. The scheduler has a complete view of resource requirements and can allocate them accordingly. For example, the system we
+can react to an increased need of CPU of one of the components by reducing the non real-time computations.
+
+%To implement the above semantics, we propose a scheduling mechanism consisting of
+%a macro (intra-slot) scheduler and a micro (inter-slot) scheduler, as follows. 
+%The micro scheduler is the built-in
+%scheduler provided by the Java virtual machine (or even a real-time Java virtual machine). We use it to run all tasks,
+%including interrupt handlers, controller components and background applications.
+%The macro scheduler mediates the execution of the real-time components, as
+%follows. At the beginning of every logical execution slot, the macro scheduler
+%invokes all \lstinline!readInput! methods and spawns a set of tasks that wrap the
+%methods of the real-time components to be executed in that slot. At the end of
+%the slot, the macro scheduler invokes all \lstinline!writeOutput! methods.
+%
+%
+%Priorities are assigned as follows. The lowest priority is assigned to the background applications that run only when the real-time threads and the interrupt handlers are
+%inactive. The highest priority is given to interrupt handlers and to the macro scheduler which is considered as the highest priority interrupt handler (assuming that
+%\lstinline!readInputs! and \lstinline!writeOutputs! are short and deterministic).  The real-time tasks, spawned by the macro scheduler, run in a priority higher than all
+%background application and lower than interrupt handlers.
+%
+%Note that our approach is independent of the algorithm used by the micro scheduler for tasks scheduling, which can be, e.g., Earliest Deadline First (EDF), Least Slack Time (LST), rate Monotonic (RM), Deadline Monotonic (DM) or any scheduling algorithm that allows guarantees of termination of all tasks before the end of each slot. More generally, the interface with the micro-scheduled does not have to be the set of tasks to run in a slot.
+%
+%A notable advantage of using automata based scheduling is that new components can be added without disturbing the continuous execution of existing ones.  Specifically, when a new component is added, the existing components are assured to continue a schedule which satisfies their scheduling specifications, but possibly not the one that was planned (because the new component may not allow the one that was planned).
+%As a simple example, consider the following component $C_1$ depicted in  Listing~\ref{lst:c1}. The methods f1, f2 need to execute cyclically (for all $i=0,1,2,\dots$ and $j=1,2$, the function \lstinline!f$j$! needs to execute in slot $2i+j$).
+%Assume that this component is added and scheduled for a while. Later on, anther component $C_2$ depicted in Listing~\ref{lst:c2} is added.
+%$C_2$ has two methods g1, g2 that need to execute cyclically too. When the second component is added, the count of the running component should not be disturbed.
+%
+%%\begin{figure}[h!]
+%%\begin{center}
+%%\noindent\begin{minipage}{.5\textwidth}
+%\begin{lstlisting}[language=java,label=lst:c1,caption=First Component.]
+%class C1 implements Component {
+%...
+%
+%@WCET(0.2)
+%public void f1() { 
+%...  
+%} 
+%
+%@WCET(0.8)
+%public void f2() { 
+%...  
+%} 
+%
+%}
+%\end{lstlisting}
+%
+%%\end{minipage} \hspace{1cm}
+%%\begin{minipage}{.5\textwidth}
+%\begin{lstlisting}[label=lst:c2,caption=Second Component.]
+%class C2 implements Component {
+%...
+%
+%@WCET(0.3)
+%public void g1() { 
+%...  
+%} 
+%
+%@WCET(0.1)
+%public void g2() { 
+%...  
+%} 
+%
+%}
+%\end{lstlisting}
+%%\end{minipage}
+%%\end{center}
+%
+%
+%%\caption[ABCDE]{blaaa}
+%%\label{qwert}
+%%\end{figure}
+%
+%%\lstlistoflistings
+%%\begin{mycode}
+%%\begin{minipage}[t]{0.3\linewidth}
+%
+%%\begin{lstlisting}[float=htb,linewidth=7cm,caption=First Component.Already scheduled for a while.]
+%%class C1 implements Component {
+%%  ...
+%%
+%%  @WCET(0.2)
+%%  public void f1() { 
+%%    ...  
+%%  } 
+%%
+%%  @WCET(0.8)
+%%  public void f2() { 
+%%    ...  
+%%  } 
+%%
+%%}
+%%\end{lstlisting} 
+%
+%%\end{minipage}
+%%\begin{minipage}[t]{0.3\linewidth}
+%%\begin{lstlisting}[float=htb,linewidth=7cm,caption=Second Componenct.]
+%
+%%class C2 implements Component {
+%%  ...
+%%
+%%  @WCET(0.3)
+%%  public void g1() { 
+%%    ...  
+%%  } 
+%%
+%%  @WCET(0.1)
+%%  public void g2() { 
+%%    ...  
+%%  } 
+%%
+%%}
+%%\end{lstlisting}
+%
+%%\end{mycode} 
+%%\end{eqnarray*}
+%%\end{minipage}
+%%%%%%%%%%%%%%%%%%%%%%  code 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%In a previous versions (RTComposer), macro-scheduling was done by simulating a random walk over the automaton whose language is the intersection of all the scheduling specification of the components. Note that in case that the existing component runs the $f2$ method (whose WCET is 0.8) within the next slot, the intersection between the languages of these two components is empty, because the new component must start with the method $g1$ whose WCET is 0.3, and $f2$ and $g1$ cannot run together within a slot. Therefore, in the previous version, using intersection lead to incorrect schedule.
+%In this paper we propose a new way to dealt with this problem. When the new component is added we play a joining game. Based on the game results we know whether this component can be added now or later, or it cannot be added without disturb the flow of the system. This game is built by the product of the running automata and the scheduling specifications of the new component. For more details, see the implementation part of this paper.
+%Game is the tool we use for the admission of the new component. In case that the new component was added, the scheduler needs to assure that the existing components will be scheduled consistently with current state of the running automaton. The new schedule will be this product automaton.
+%All the computations of the product automaton and the game are done as non-real-time background computations. Also, the new product automaton should not always start executing form its initial state (as the existing components are not necessarily at their initial state). To account for that, and still provide quick turnover, a hash-table is constructed that maps the states of the running automaton to the sates of the automaton that is going to replace it. Then, when the computation of product automaton is completed, the state of the running automaton is replaced with the corresponding state of the new automaton. Removal of components can done in a similar manner.
+
 
 \section{Simulations}
 \label{sec:simulation}
@@ -115,7 +385,7 @@ We implement an autonomous controller for that task and evaluated its performanc
 The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increase the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance.
 
 \subsection{Observer Design}
-We first implemented an observer based on the work of Hanoch~\cite{Hanoch}. The observer gets the positions of the widow corners, enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, and extract 4 quantities based on the shape and location of the window corners in the image plane: $S_x$ , $s_y$ , $V_d$ and $sz$.
+We first implemented an observer based on the work of Efraim at al.~\cite{Hanoch}. The observer gets the positions of the widow corners, enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, and extract 4 quantities based on the shape and location of the window corners in the image plane: $S_x$ , $s_y$ , $V_d$ and $sz$.
 \textbf{center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' in the image plane along the image $x$ and $y$ axes, respectively. $S_x$ and $S_y$ are normalized to the range of $[-1,1]$.
 $S_x$ is used to measure the roll angle of the window center (for stabilize the roll axis), and $S_y$ is used to measure the altitude of the drone (for stabilizing the throttle).
 \textbf{window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
