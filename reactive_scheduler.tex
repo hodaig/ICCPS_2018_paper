@@ -53,7 +53,7 @@ fill=orange!20!yellow!20]
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{amssymb}
-\usepackage{MnSymbol}
+%\usepackage{MnSymbol}
 
 \RequirePackage{pgf,pgffor}
 
@@ -385,23 +385,47 @@ We implement an autonomous controller for that task and evaluated its performanc
 The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increase the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance.
 
 \subsection{Observer Design}
-We first implemented an observer based on the work of Efraim at al.~\cite{Hanoch}. The observer gets the positions of the widow corners, enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, and extract 4 quantities based on the shape and location of the window corners in the image plane: $S_x$ , $s_y$ , $V_d$ and $sz$.
+\label{sec:Observer Design}
+We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners, enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, and extract 4 quantities based on the shape and location of the window corners in the image plane: $S_x$ , $s_y$ , $V_d$ and $sz$.
 \textbf{center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' in the image plane along the image $x$ and $y$ axes, respectively. $S_x$ and $S_y$ are normalized to the range of $[-1,1]$.
 $S_x$ is used to measure the roll angle of the window center (for stabilize the roll axis), and $S_y$ is used to measure the altitude of the drone (for stabilizing the throttle).
 \textbf{window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
 \textbf{Vertical difference:} $V_d = \frac{y_1-y_4-(y_2-y_3)}{y_1-y_4+(y_2-y_3)}$, were $y_i$ is the vertical position of $p_i$ in the range of $[-1,1]$ (0 is the center of the image) first is used to measure the angular position of the drone in relation to the window ($\theta$), then $\theta$ and $sz$ are used to calculate the horizontal position parallel to the window surface ($x$ position) of the drone (see Figure~\ref{fig:cordinates}). 
 
-%TODO - http://robottini.altervista.org/kalman-filter-vs-complementary-filter
-%TODO - maybe we can cite this: http://proyectos.ciii.frc.utn.edu.ar/cuadricoptero/export/262a5075a7aa6575102f84fcdc2ee39ecab3c530/documentacion/articulo_case_filtro_comp/referencias/A%20comparison%20of%20complementary%20and%20kalman%20filtering.pdf
-After measuring the relative position and yaw attitude as usual we add estimator (filter) to get the best state estimation. 
-As shown in the simulation at Section~\ref{sec:simulation} we should use Kalman filter estimator, in our case we have non-linear system... %TODO - continue
-For simplicity, inspiring from linear Kalman filter~\cite{??? kalman}, we use two steps estimator that \textit{predict} the current state evolved from the previous state using a linearized model of the system ($\hat{x_{k|k-1}}$) and then \textit{update} the prediction with current state measurement from image explained before, noted by $z_k$.
-This is a simplified kalman filter, a known technique as show in~\cite{??? kalman vs CF}, where The result estimation (noted by $\hat{x}_{k|k}$) is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measurement ($z_k$):
-$ \hat{x_{k|k}} = K \hat{x}_{k|k-1} + (1-K) z_k $.
-%TODO - re-write the above paragraph
+After measuring the relative position and yaw attitude, as usual, we add estimator filter to get better state estimation. 
+In theory, and s shown in the simulation at Section~\ref{sec:simulation}, we should use Kalman filter estimator for best state estimation, in our case is non-linear system and the process noise distribution is problematic to determine (battery state affects the system dynamics), this with the complexity of kalman filter lead us simplify the kalman filter principles using complementary filter, a simple estimation technique that is often used in the flight control industry.
+Complementary filter is actually a steady-state Kalman filter for a certain class of filtering problems~\cite{complementaryVSKalman}.
+We use two steps estimator that, (1) \textit{predict} the current state evolved from the previous state using a linearized model of the system ($\hat{x_{k|k-1}}$) and then \textit{update} the prediction with current state measurement from image explained before, noted by $z_k$.
+The result estimation (noted by $\hat{x}_{k|k}$) is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measurement ($z_k$):
+$ \hat{x_{k|k}} = K \hat{x}_{k|k-1} + (1-K) z_k $ were $K$ is constant approximation of the kalman filter gain ($K_k$).
 
+As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode has different accuracy.
+Similarly to the gain of kalman filter, $K$ represent the ratio between process noise and measurement noise distribution, therefore $K$ is defined separately for each mode to achieve the best estimation in each mode.
+For simplicity, in this work we examine only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
 
+\subsection{Controller Design}
 
+In this experiment, we consider the task of \textit{hovering in front of the window}, the controller objective is to hover parallel to the window (center of $x$ axis) at the altitude of the window within distance of 2 meters in front of the window and face pointed to the center of the window (yaw angle).
+We consider this point as the origin and the coordinates are according to Fig.~\ref{fig:axis}.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=85mm]{axes_fron_hanoch.jpg}}
+    \caption{TODO fix "x" axes.}
+    \label{fig:axis}
+\end{figure}
+
+The controller consist of 4 independent feedback control loops, altitude, yaw angel, pitch and roll.
+Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller which his input is the required distance or $x$ position relative to the window accordingly, the high level controller outputs the required angle (acceleration) to the low level controller as show in Fig.~\ref{fig:controllerStracture}.
+All the loops control regulate the position or attitude relative to the window.
+The inertial (angular) feedback is generated by the existing \textit{Attitude and heading reference system} (AHRS) library of ArduPilot see Section~\ref{sec:Experiment setup}, and the window related feedback come directly from the observer described in Section~\ref{sec:Observer Design}.
+
+Based on the separation principle, we can use that controller regardless the measurement quality, in practice we implement basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters with the highest resolution observer.
+
+\begin{figure}[htbp]
+    \centerline{\includegraphics[width=85mm]{controller_from_hanoch.jpg}}
+    \caption{TODO.}
+    \label{fig:controllerStracture}
+\end{figure}
 
 
 
@@ -410,19 +434,8 @@ $ \hat{x_{k|k}} = K \hat{x}_{k|k-1} + (1-K) z_k $.
 
 
 %TODO - continue here
-As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
-The $K$ gain is tuned different for each mode (resolution) for achieving the best estimation in each mode.
-For simplicity, we examine only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
-
-\subsection{Controller Design}
-We used a simple Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller that we tuned by experimenting with the quadrotor in our lab. Based on the separation principle~\cite{?}, we tuned the parameters of our controller only with the highest resolution observer and used them for all the other observers without any modification.
-
-% in terms of the horizontal linear axis parallel to the window surface, as this is the most critical axis in this task, this axis noted by $x$ see Figure~\ref{fig:window axis ???}.
-%We implement standard PID~\cite{aastrom2006advanced} controller that regulates the position and attitude of the drone relative to the window.
-%We used inertial sensors (Gyroscope and Accelerometer) for attitude control relative to earth, and we use camera~\cite{??? picam} and simple image processing for position and attitude relatively to the window~\ref{sec:visionAlgo ???}.
-
-
 \subsection{Analysis and Specification Automata}
+%As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
 
 The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:window axis ???}). Our goal is to achieve maximum performance with minimal amount of processing (CPU percentage). The main consumer of computation resources in this system is the heavy observation tasks.
 
@@ -444,6 +457,7 @@ TODO - gyro derived??
 TODO - graphs and tables
 
 \section{Experiment setup}
+\label{sec:Experiment setup}
 The drone is controlled by a Raspberry pi with the navio~\cite{??? raspberry, navio} that runs a modified ArduPilot~\cite{??? APM} software.
 
 %TODO - natnet
