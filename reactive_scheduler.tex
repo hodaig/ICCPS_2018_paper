@@ -446,22 +446,21 @@ With adaptive scheduling specification we lower the CPU usage without significan
 %TODO - wha realy "post-fit residual" mean??
 Notation: post-fit residual $\tilde{y}_{k|k}$, is calculated as the absolute difference between the estimated state ($\hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$.
 From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
-Using simple guard automata as shown in Section~\ref{sec:scheduler} we define dynamic observer that choose the operation mode (high or low quality) based on $\tilde{y}_{k|k}$ value, as show in Fig.~\ref{fig:guard auto y_kk}, this observer operate in low quality for ``GOOD'' states, when $\tilde{y}_{k|k} < \alpha_{low}$, and change to high quality if the state is ``BAD'', when $\tilde{y}_{k|k} > \alpha_{high}$, the values of  $ \alpha_{low}$ and $ \alpha_{high}$ has determined from the how and high quality graph and fine tuned by experiments. 
-Different  $ \alpha_{low}$ and $ \alpha_{high}$ achieve different traydoff of the goals
-
+Using simple guard automata as shown in Section~\ref{sec:scheduler} we define dynamic observer that choose the operation mode (high or low quality) based on $\tilde{y}_{k|k}$ value, as show in Fig.~\ref{fig:guard auto y_kk}, this observer operate in low quality for ``GOOD'' states, when $\tilde{y}_{k|k} < \alpha_{low}$, and change to high quality if the state is ``BAD'', when $\tilde{y}_{k|k} > \alpha_{high}$, the trash holds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
+Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
+Note, in Section~\ref{sec:results} we show how this dynamic observer do not result any significant affect the performance but reduce by factor of $\frac{1}{2}$ the processing time.
 
 %TODO - position ($x_{k|k}$)  derived schedulers
-Another option we examine, a straight-forward solution directly based on the current position $\hat{x}_{k|k}$
+We also examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$), we define dynamic observer similar to the $\tilde{y}_{k|k}$ based observer described above, but in this case ``GOOD'' states are states where the drone is closer to the center line of the window, and ``BAD'' states are when the drone is far.
+Formally, this observer operate in low quality when $x < \alpha_x$, and in high quality when $x > \alpha_x$, this also produce similar results to the $\tilde{y}_{k|k}$ based observer.
 
+%TODO hodai: complex / agregated schedulers (3 states) - the results shows no improvement I wont to perform new experiments with significant improvement
 
-TODO - complex / agregated schedulers
-
-TODO - gyro derived??
-
-TODO - more sugestions
+%TODO - gyro derived?? more suggestions?
 
 
 \subsection{Results}
+\label{sec:results}
 TODO - graphs and tables
 
 \section{Experiment setup}
