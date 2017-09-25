@@ -397,7 +397,7 @@ In theory, and s shown in the simulation at Section~\ref{sec:simulation}, we sho
 Complementary filter is actually a steady-state Kalman filter for a certain class of filtering problems~\cite{complementaryVSKalman}.
 We use two steps estimator that, (1) \textit{predict} the current state evolved from the previous state using a linearized model of the system ($\hat{x_{k|k-1}}$) and then \textit{update} the prediction with current state measurement from image explained before, noted by $z_k$.
 The result estimation (noted by $\hat{x}_{k|k}$) is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measurement ($z_k$):
-$ \hat{x_{k|k}} = K \hat{x}_{k|k-1} + (1-K) z_k $ were $K$ is constant approximation of the kalman filter gain ($K_k$).
+$ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) z_k $ were $K$ is constant approximation of the kalman filter gain ($K_k$).
 
 As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode has different accuracy.
 Similarly to the gain of kalman filter, $K$ represent the ratio between process noise and measurement noise distribution, therefore $K$ is defined separately for each mode to achieve the best estimation in each mode.
@@ -437,20 +437,28 @@ Based on the separation principle, we can use that controller regardless the mea
 \subsection{Analysis and Specification Automata}
 %As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
 
-The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:window axis ???}). Our goal is to achieve maximum performance with minimal amount of processing (CPU percentage). The main consumer of computation resources in this system is the heavy observation tasks.
+The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:axis}). Our goal is to achieve maximum performance with minimal amount of processing time, when both goals can not be achieved together we try to set the best traydoff between them. The main consumer of computation resources in this system is the image based observation tasks.
 
 Analyzing the test results shown in Table~\ref{tab:res ???} we see that High quality observation mode provide 0.4 meter error tolerance meaning we can fly this mode in 1.2 meter wide corridor\footnote{Experiments was done with 0.4 meter wide quad-rotor}, with the cost of 30\% CPU usage. 
 With adaptive scheduling specification we lower the CPU usage without significant worsening of High quality performances.
 
 %TODO - error ($y_{k|k}$) derived schedulers
-From the Low quality experiment graph we can see that measurement post-fit residual ($\tilde{y}_{k|k}$) is accumulate proportional to the deviation from the center of $x$ axis, and we can use $\tilde{y}_{k|k}$ vales to predict 
+%TODO - wha realy "post-fit residual" mean??
+Notation: post-fit residual $\tilde{y}_{k|k}$, is calculated as the absolute difference between the estimated state ($\hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$.
+From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
+Using simple guard automata as shown in Section~\ref{sec:scheduler} we define dynamic observer that choose the operation mode (high or low quality) based on $\tilde{y}_{k|k}$ value, as show in Fig.~\ref{fig:guard auto y_kk}, this observer operate in low quality for ``GOOD'' states, when $\tilde{y}_{k|k} < \alpha_{low}$, and change to high quality if the state is ``BAD'', when $\tilde{y}_{k|k} > \alpha_{high}$, the values of  $ \alpha_{low}$ and $ \alpha_{high}$ has determined from the how and high quality graph and fine tuned by experiments. 
+Different  $ \alpha_{low}$ and $ \alpha_{high}$ achieve different traydoff of the goals
 
 
-TODO - position ($x_{k|k}$)  derived schedulers
+%TODO - position ($x_{k|k}$)  derived schedulers
+Another option we examine, a straight-forward solution directly based on the current position $\hat{x}_{k|k}$
+
 
 TODO - complex / agregated schedulers
 
 TODO - gyro derived??
+
+TODO - more sugestions
 
 
 \subsection{Results}
