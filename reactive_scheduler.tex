@@ -364,6 +364,13 @@ Our approach for using automata for scheduling resources in software based contr
 As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each requires a different amount of CPU and provides a different amount of accuracy.  
 
 
+\begin{figure}[htbp]
+	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
+	\caption{A Simulink model demonstrating our approach.}
+	\label{fig:simulink}
+\end{figure}
+
+
 %\begin{enumerate}
 %    
 %    \item \textbf{Controller design:} Based on the separation principle, we propose to design the controller to achieve the control objectives assuming a perfect observation. In practice, this may not be feasible because controller designs such as PID require a system to experiment with. In this case, as demonstrated in the case-study below (see Section~\ref{sec:caseStady}), we propose to work with one of the observation modes. If the system is close to linear, this should result with a near optimal design.
