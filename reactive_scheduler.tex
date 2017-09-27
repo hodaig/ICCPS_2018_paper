@@ -179,7 +179,7 @@ researchers to develop compositional approaches and interface notions for real-t
 In this paper we present an approach, a proof-of-concept tool, and a case-study in scheduling computations in embedded control systems. Our approach is based on the automata based scheduling approach, suggested in~\cite{WA07,RTComposer,AW08}, where automata are proposed as interfaces that allow the dynamicity and efficiency of desktop operating systems with the predictability of real-time operating systems. The approach allows for components to specify the CPU resources that they need in a way that gives an application agnostic scheduler the freedom to choose schedules at run-time such that the needs of all the components are met, even of components that were added only at run-time.  The main contributions of this paper relative to the earlier work in this direction is:
 (1) We propose an extension of the automata based scheduling frame work that allows to direct the schedule based on the state of the controllers; (2) We propose a technique, based on the theory of Kalman Filters, for designing reactively scheduled controllers; (3) We report on our experience with improving the performance of real-time a vision-based control system (a quadrotor that stabilizes itself in front of a window).
 
-\section{Architecture: Automata Based Reactive Scheduler}
+\section{Automata Based Reactive Scheduler}
 \label{sec:architecture}
 
 As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a class in, say C++, accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., the automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers.
@@ -356,11 +356,8 @@ can react to an increased need of CPU of one of the components by reducing the n
 %All the computations of the product automaton and the game are done as non-real-time background computations. Also, the new product automaton should not always start executing form its initial state (as the existing components are not necessarily at their initial state). To account for that, and still provide quick turnover, a hash-table is constructed that maps the states of the running automaton to the sates of the automaton that is going to replace it. Then, when the computation of product automaton is completed, the state of the running automaton is replaced with the corresponding state of the new automaton. Removal of components can done in a similar manner.
 
 
-\section{Simulations}
-\label{sec:simulation}
-%TODO - show some matlab simulations of hybrid systems.
-
-\section{An example driven description of the proposed approach}
+%\section{An example driven description of the proposed approach}
+\section{Designing a schedulable control system}
 
 Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
 
@@ -396,7 +393,7 @@ The part of the controller that we focused on is the vision based position contr
 We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners, enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, and extract 4 quantities based on the shape and location of the window corners in the image plane: $S_x$ , $s_y$ , $V_d$ and $sz$.
 \textbf{center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' in the image plane along the image $x$ and $y$ axes, respectively. $S_x$ and $S_y$ are normalized to the range of $[-1,1]$.
 $S_x$ is used to measure the roll angle of the window center (for stabilize the roll axis), and $S_y$ is used to measure the altitude of the drone (for stabilizing the throttle).
-\textbf{window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
+\textbf{Window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
 \textbf{Vertical difference:} $V_d = \frac{y_1-y_4-(y_2-y_3)}{y_1-y_4+(y_2-y_3)}$, were $y_i$ is the vertical position of $p_i$ in the range of $[-1,1]$ (0 is the center of the image) first is used to measure the angular position of the drone in relation to the window ($\theta$), then $\theta$ and $sz$ are used to calculate the horizontal position parallel to the window surface ($x$ position) of the drone (see Figure~\ref{fig:cordinates}). 
 
 After measuring the relative position and yaw attitude, as usual, we add estimator filter to get better state estimation. 
@@ -478,7 +475,7 @@ TODO - graphs and tables
         %\begin{tabular}{m{6em} |  c c c}
             \hline
             %\textbf{Observer}& CPU usage (\%)  & Mean displacement ($x$ axis) & Max displacement ($x$ axis)\\
-            \textbf{Observer}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (mm)} & \textbf{max(|$x$|) (mm)}\\
+            \textbf{Schedule}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (mm)} & \textbf{max(|$x$|) (mm)}\\
             %\cline{2-3} 
             \hline
             Only High & 30.9\% & 95 & 312 \\
