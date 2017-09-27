@@ -1,6 +1,6 @@
 \documentclass{sig-alternate-ipsn13}
 
-
+\usepackage{array}
 \usepackage{url}
 \usepackage{cite}
 \usepackage{subfigure}
@@ -457,7 +457,7 @@ Using simple guard automata as shown in Section~\ref{sec:scheduler} we define dy
 Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
 Note, in Section~\ref{sec:results} we show how this dynamic observer do not result any significant affect the performance but reduce by factor of $\frac{1}{2}$ the processing time.
 
-%TODO - position ($x_{k|k}$)  derived schedulers
+%TODO - displacement ($x_{k|k}$)  derived schedulers
 We also examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$), we define dynamic observer similar to the $\tilde{y}_{k|k}$ based observer described above, but in this case ``GOOD'' states are states where the drone is closer to the center line of the window, and ``BAD'' states are when the drone is far.
 Formally, this observer operate in low quality when $x < \alpha_x$, and in high quality when $x > \alpha_x$, this also produce similar results to the $\tilde{y}_{k|k}$ based observer.
 
@@ -470,9 +470,50 @@ Formally, this observer operate in low quality when $x < \alpha_x$, and in high 
 \label{sec:results}
 TODO - graphs and tables
 
+
+\begin{table}[htbp]
+    \caption{Test Results}
+    \begin{center}
+        \begin{tabular}{m{8em} |  m{4em} m{5em} m{5em}}
+        %\begin{tabular}{m{6em} |  c c c}
+            \hline
+            %\textbf{Observer}& CPU usage (\%)  & Mean displacement ($x$ axis) & Max displacement ($x$ axis)\\
+            \textbf{Observer}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (mm)} & \textbf{max(|$x$|) (mm)}\\
+            %\cline{2-3} 
+            \hline
+            Only High & 30.9\% & 95 & 312 \\
+            \hline
+            Only Low & 2.1\% & 300 & 709 \\
+            \hline
+            error ($y_{k|k}$) derived 10-20 & 10.3\% & 149 & 432 \\
+            \hline
+            error ($y_{k|k}$) derived 10-15 & 11.7\% & 113 & 363 \\
+            \hline
+            displacement ($x_{k|k}$) derived 10 & 16.6\% & 109 & 425 \\
+            \hline
+            displacement ($x_{k|k}$) derived 20 & 14.0\% & 141 & \textbf{321} \\
+            \hline
+            displacement ($x_{k|k}$) derived 30 & 8.9\% & 174 & \textbf{484} \\
+            \hline
+            4state X10-30 E10-15 & 10.4\% & 127 & 366 \\
+            \hline
+            3state X10 E10-15 & 8.8\% & 129 & 321 \\
+            \hline
+            
+        \end{tabular}
+        \label{tab1}
+    \end{center}
+\end{table}
+
 \section{Experiment setup}
 \label{sec:Experiment setup}
-The drone is controlled by a Raspberry pi with the navio~\cite{??? raspberry, navio} that runs a modified ArduPilot~\cite{??? APM} software.
+
+In order to perform the experiments we used of-the-shelf quad rotor with \textit{navio2}~\cite{navio} and \textit{Raspberry pi}~\cite{raspberry} flight controller that runs a modified \textit{ArduPilotMega-arducopter}~\cite{APM} software.
+\textit{Navio2} is extension board (shield) for the \textit{Raspberry pi}~\cite{raspberry} platform, it provides the nessesary interfaces such as remote control inputs and motors output, and it's equipped with 3-axes gyroscop and accelerometer MEMS sensors~\cite{MEMS}.
+%cammera
+We used the standard raspberry pi camera. % and modified driver for eficient recording in 
+
+%the window
 
 %TODO - natnet
 %TODO - vision search algorithem??
