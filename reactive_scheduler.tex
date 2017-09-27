@@ -180,6 +180,7 @@ In this paper we present an approach, a proof-of-concept tool, and a case-study 
 (1) We propose an extension of the automata based scheduling frame work that allows to direct the schedule based on the state of the controllers; (2) We propose a technique, based on the theory of Kalman Filters, for designing reactively scheduled controllers; (3) We report on our experience with improving the performance of real-time a vision-based control system (a quadrotor that stabilizes itself in front of a window).
 
 \section{Architecture: Automata Based Reactive Scheduler}
+\label{sec:architecture}
 
 As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a class in, say C++, accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., the automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers.
 
@@ -359,18 +360,24 @@ can react to an increased need of CPU of one of the components by reducing the n
 \label{sec:simulation}
 %TODO - show some matlab simulations of hybrid systems.
 
-\section{Proposed Methodology}
-\begin{enumerate}
-    
-    \item \textbf{Controller design:} Based on the separation principle, we propose to design the controller to achieve the control objectives assuming a perfect observation. In practice, this may not be feasible because controller designs such as PID require a system to experiment with. In this case, as demonstrated in the case-study below (see Section~\ref{sec:caseStady}), we propose to work with one of the observation modes. If the system is close to linear, this should result with a near optimal design.
-    
-    \item \textbf{Observers design:} Specification of sensor modes and observers design
-    
-    \item \textbf{Performance analysis:} Now, we can perform some experiments with the different observer modes and analyze transient behaviors. Specifically, as shown in the case study~\ref{sec:caseStady_analysis}, we can measure how long it takes for the error to accumulate after switching to a lesser observation mode and formulate how this error affects the control objectives.
+\section{An example driven description of the proposed approach}
 
-    \item \textbf{Scheduling automata design:} Base on the analysis we can specify the resource scheduling requirements in the form of \textit{specification automaton}. The goal is to design flexible specification that allow dynamic scheduling in order to adapt the environment and the system state, this will improve the system efficient.
+Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
 
-\end{enumerate}
+As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each requires a different amount of CPU and provides a different amount of accuracy.  
+
+
+%\begin{enumerate}
+%    
+%    \item \textbf{Controller design:} Based on the separation principle, we propose to design the controller to achieve the control objectives assuming a perfect observation. In practice, this may not be feasible because controller designs such as PID require a system to experiment with. In this case, as demonstrated in the case-study below (see Section~\ref{sec:caseStady}), we propose to work with one of the observation modes. If the system is close to linear, this should result with a near optimal design.
+%    
+%    \item \textbf{Observers design:} Specification of sensor modes and observers design
+%    
+%    \item \textbf{Performance analysis:} Now, we can perform some experiments with the different observer modes and analyze transient behaviors. Specifically, as shown in the case study~\ref{sec:caseStady_analysis}, we can measure how long it takes for the error to accumulate after switching to a lesser observation mode and formulate how this error affects the control objectives.
+%
+%    \item \textbf{Scheduling automata design:} Base on the analysis we can specify the resource scheduling requirements in the form of \textit{specification automaton}. The goal is to design flexible specification that allow dynamic scheduling in order to adapt the environment and the system state, this will improve the system efficient.
+%
+%\end{enumerate}
 
 
 %\section{Application to Autonomous Quad-rotor Flying In-Door}
