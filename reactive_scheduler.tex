@@ -67,8 +67,7 @@ fill=orange!20!yellow!20]
 \usepackage[mathcal]{euscript}
 %%% END LaTeX-Packages ----------------------------------
 
-\usepackage{amsthm}
-\usepackage{setspace}
+
 \newcommand\tuple[1]{\langle #1 \rangle}
 
 \newcommand\sSF[1]{$\Diamond$\footnote{SF: \sout{#1}}}
@@ -94,7 +93,7 @@ fill=orange!20!yellow!20]
 \newtheorem{con}[thm]{Construction}
 \newtheorem{prop}[thm]{Proposition}
 \newtheorem{claim}[thm]{Claim}
-\newtheorem*{remark}{Remark}
+\newtheorem{remark}{Remark}
 
 \DeclareMathOperator*{\guard}{guard}
 \DeclareMathOperator*{\sensor}{sen}
@@ -398,7 +397,7 @@ The actuation noise, depicted on the left, is with a unit variance.
 
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy that produces noise with low variance and a mode with low accuracy that produces errors with higher variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement error in the mode.
 
-We ran this models with three versions of the `Automata Based Scheduler' block. The first version, called `Only High' in Table~\ref{tbl:sim-results}, is where the block acts simply as the constant $1$, ignoring its inputs altogether. Similarly, the term `Only Low' in the table refers to an implementation where the block is the constant $0.25$. These two implementations model the constant schedules, where the sensor is operated in one mode along the whole execution. These two schedules are compared to a third implementation where the block implements the schedule given by the automaton:
+We ran this models with three versions of the `Automata Based Scheduler' block. The first version, called `High' in Table~\ref{tbl:sim-results}, is where the block acts simply as the constant $1$, ignoring its inputs altogether. Similarly, the term `Low' in the table refers to an implementation where the block is the constant $0.25$. These two implementations model the constant schedules, where the sensor is operated in one mode along the whole execution. These two schedules are compared to a third implementation, called 'Automaton' in the table, where the block implements the schedule given by the automaton:
 \begin{center}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=6cm,
 semithick]
@@ -426,16 +425,20 @@ where the name of a state defines the variance of the estimation noise when ente
 %
 %C = [1 0 0];
 
-\begin{center}
+\begin{table}
+	\centering
 	\begin{tabular}{ |  l  | c | c | c | }
 		\hline
 		 &  High & Low & Automaton \\ \hline \hline
 		\%CPU                    & 0.85 & 0.1  & 0.46 \\ \hline
 		mean of $|x -\hat{x}|$ & 0.97 & 1.24 & 1.08 \\ \hline
 	\end{tabular}
-\end{center}
+    \caption{Simulation results.}
+    \label{tbl:sim-results}
+\end{table}
 
-
+The results of the simulation, summarized in Table~\ref{tbl:sim-results}, show, as expected, that the CPU consumption is much lower (0.1) when using the low-quality version of the sensing algorithm and is higher (0.85) when the high-quality version of the sensing algorithm is used. The performance of the estimation in terms of the mean distance between $x$ and $\hat x$ better with the high-quality version (0.97) than it is with the low-quality version (1.24).
+More interestingly, we can see that the experiment with the automaton that switches between the two sensor modes yields performance that is close to the performance of the high-quality sensing algorithm, using much less CPU. 
 
 
 
@@ -474,13 +477,12 @@ $S_x$ is used to measure the roll angle of the window center (for stabilize the 
 \textbf{Window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
 \textbf{Vertical difference:} $V_d = \frac{y_1-y_4-(y_2-y_3)}{y_1-y_4+(y_2-y_3)}$, were $y_i$ is the vertical position of $p_i$ in the range of $[-1,1]$ (0 is the center of the image) first is used to measure the angular position of the drone in relation to the window ($\theta$), then $\theta$ and $sz$ are used to calculate the horizontal position parallel to the window surface ($x$ position) of the drone (see Figure~\ref{fig:axis}). 
 
-\begin{remark}
-    We assume that process state ($x$) is governed by the linear~\footnote{we make approximation of our non-linear system by linear difference equation} stochastic difference equation:
+{\bf Remark:} We assume that process state ($x$) is governed by the linear~\footnote{we make approximation of our non-linear system by linear difference equation} stochastic difference equation:
     $$x_{k}=Ax_{k-1} + Bu_{k} + w_{k}$$
     And the measurement ($z_k$) at time $k$ is:
     $$z_k=Cx_k+v_k$$
     The random variables $w_k$ and $v_k$ represent the process and measurement noise (respectively).
-\end{remark}
+%\end{remark}
 
 After measuring the relative position and yaw attitude, as usual, we add estimator filter to get better state estimation. 
 %TODO : check if its realy shown there:
