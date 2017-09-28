@@ -183,10 +183,10 @@ researchers to develop compositional approaches and interface notions for real-t
 In this paper we present an approach, a proof-of-concept implementation, and a case-study in scheduling computations in embedded control systems. Our approach is based on the automata based scheduling approach, suggested in~\cite{WA07,RTComposer,AW08}, where automata are proposed as interfaces that allow the dynamicity and efficiency of desktop operating systems with the predictability of real-time operating systems. The approach allows for components to specify the CPU resources that they need in a way that gives an application agnostic scheduler the freedom to choose schedules at run-time such that the needs of all the components are met, even of components that were added only at run-time.  The main contributions of this paper relative to the earlier work in this direction is:
 (1) We propose an extension of the automata based scheduling frame work that allows to direct the schedule based on the state of the controllers; (2) We propose a technique, based on the theory of Kalman Filters, for designing reactively scheduled controllers; (3) We report on our experience with improving the performance of real-time a vision-based control system (a quadrotor that stabilizes itself in front of a window).
 
-\section{Automata Based Reactive Scheduler}
+\section{The proposed approach}
 \label{sec:architecture}
 
-As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a class in, say C++, accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., the automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers.
+As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a class in, say C++, accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., the automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers. Another addition is that we have implemented the approach as an enhancement of the internal scheduler of  the Auto Pilot Mega (APM) open source unmanned vehicle autopilot software suite.
 
 For scheduling tasks within a slot, we adopt the Logical Execution Time (LET)
 abstraction~\cite{DBLP:journals/pieee/HenzingerHK03} that allows deterministic
@@ -395,8 +395,9 @@ The actuation noise, depicted on the left, is with a unit variance.
 
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy that produces noise with low variance and a mode with low accuracy that produces errors with higher variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement error in the mode.
 
-We ran this models with three versions of the `Automata Based Scheduler' block. The first version, called `Only High' in Table~\ref{tbl:sim-results}, is where the block acts simply as the constant $1$, ignoring its inputs altogether. Similarly, the term `Only Low' in the table refers to an implementation where the block is the constant $0.25$. These two implementations model the constant schedules, where the sensor is operated in one mode along the whole execution. These two schedules are compared to a third implementation where the block implements the schedule given by the automaton:
+We ran this models with three versions of the `Automata Based Scheduler' block. The first version, called `High' in Table~\ref{tbl:sim-results}, is where the block acts simply as the constant $1$, ignoring its inputs altogether. Similarly, the term `Low' in the table refers to an implementation where the block is the constant $0.25$. These two implementations model the constant schedules, where the sensor is operated in one mode along the whole execution. These two schedules are compared to a third implementation, called 'Automaton' in the table, where the block implements the schedule given by the automaton:
 %TODO - hodai say: you forgot  to put the automaton inside figure??
+%TODO-Gera say: No. I don't see a reason to put it in a figure :-)
 \begin{center}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=6cm,
 semithick]
@@ -423,14 +424,20 @@ where the name of a state defines the variance of the estimation noise when ente
 %
 %C = [1 0 0];
 
-\begin{center}
+\begin{table}
+	\centering
 	\begin{tabular}{ |  l  | c | c | c | }
 		\hline
-		 &  High & Low & Automaton \\ \hline \hline
+		&  High & Low & Automaton \\ \hline \hline
 		\%CPU                    & 0.85 & 0.1  & 0.46 \\ \hline
 		mean of $|x -\hat{x}|$ & 0.97 & 1.24 & 1.08 \\ \hline
 	\end{tabular}
-\end{center}
+	\caption{Simulation results.}
+	\label{tbl:sim-results}
+\end{table}
+
+The results of the simulation, summarized in Table~\ref{tbl:sim-results}, show, as expected, that the CPU consumption is much lower (0.1) when using the low-quality version of the sensing algorithm and is higher (0.85) when the high-quality version of the sensing algorithm is used. The performance of the estimation in terms of the mean distance between $x$ and $\hat x$ better with the high-quality version (0.97) than it is with the low-quality version (1.24).
+More interestingly, we can see that the experiment with the automaton that switches between the two sensor modes yields performance that is close to the performance of the high-quality sensing algorithm, using much less CPU. 
 
 
 
