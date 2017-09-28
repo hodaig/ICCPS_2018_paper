@@ -363,14 +363,17 @@ Our approach for using automata for scheduling resources in software based contr
 
 As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each requires a different amount of CPU and provides a different amount of accuracy. 
 
-Formally, we assume that the system is given as a Linear Time Invariant system, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise. 
+Formally, we assume that the system is given as a Linear Time Invariant system, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise. We assume that each sensor can be operated in a range of modes (more than one), each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
 
-
-\begin{figure}[htbp]
+\begin{figure}%[htbp]
 	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
 	\caption{A Simulink model demonstrating our approach.}
 	\label{fig:simulink}
 \end{figure}
+
+The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter for the purpose. The filer gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler.
+
+
 
 
 %\begin{enumerate}
