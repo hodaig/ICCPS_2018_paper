@@ -357,7 +357,7 @@ can react to an increased need of CPU of one of the components by reducing the n
 
 
 %\section{An example driven description of the proposed approach}
-\section{A simulation based experiment}
+\section{A demonstration of the approach in simulation}
 
 Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
 
@@ -371,7 +371,7 @@ Formally, we assume that the system is given as a Linear Time Invariant system, 
 	\label{fig:simulink}
 \end{figure}
 
-The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter for the purpose. The filer gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter and the measurement are fed to the scheduler (in addition to, possibly, sending them to the controller) that uses them as base for its scheduling decisions.
+The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter for the purpose. The filer gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter and the measurement are fed to the scheduler (in addition to, possibly, sending them to the controller) that uses them for deciding the next mode of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
 
 
 
