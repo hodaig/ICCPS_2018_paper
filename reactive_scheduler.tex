@@ -373,6 +373,35 @@ Formally, we assume that the system is given as a Linear Time Invariant system, 
 
 The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter for the purpose. The filer gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter and the measurement are fed to the scheduler (in addition to, possibly, sending them to the controller) that uses them for deciding the next mode of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
 
+We ran the model depicted in Figure~\ref{fig:simulink} with the linear time invariant system:
+\begin{eqnarray*}
+x(k+1) &=& \begin{pmatrix}
+	1.3  & -0.5  & 0.1 \\
+	1    & 0     & 0 \\
+	0    & 1     & 0
+\end{pmatrix}x(k)+ 
+\begin{pmatrix}
+-0.4 \\
+0.6\\
+0.5\end{pmatrix} u(k) \\
+y(y)&=& \begin{pmatrix}1 & 0 &0\end{pmatrix}x(k)
+\end{eqnarray*}
+taken from \url{https://www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Figure~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequence=1$) to this system. 
+
+The actuation noise, depicted on the left, is with a unit variance. The `Automata Based Scheduler' block sets the variance of the sensing noise dynamically to be either $0.25$ or $2$ at each step of the simulation. 
+
+%A = [1.1269   -0.4940    0.1129,
+%1.0000         0         0,
+%0    1.0000         0];
+%
+%B = [-0.3832
+%0.5919
+%0.5191];
+%
+%C = [1 0 0];
+
+
+
 
 
 
