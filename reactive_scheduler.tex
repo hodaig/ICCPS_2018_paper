@@ -61,13 +61,10 @@ fill=orange!20!yellow!20]
 
 \RequirePackage{pgf,pgffor}
 
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows, automata, positioning}
-
 \usepackage[mathcal]{euscript}
 %%% END LaTeX-Packages ----------------------------------
 
-\usepackage{amsthm}
+%\usepackage{amsthm}
 \usepackage{setspace}
 \newcommand\tuple[1]{\langle #1 \rangle}
 
@@ -94,7 +91,7 @@ fill=orange!20!yellow!20]
 \newtheorem{con}[thm]{Construction}
 \newtheorem{prop}[thm]{Proposition}
 \newtheorem{claim}[thm]{Claim}
-\newtheorem*{remark}{Remark}
+\newtheorem{remark}{Remark}
 
 \DeclareMathOperator*{\guard}{guard}
 \DeclareMathOperator*{\sensor}{sen}
@@ -474,6 +471,7 @@ $S_x$ is used to measure the roll angle of the window center (for stabilize the 
 \textbf{Window size:} $sz$ is the sum of the vertical edges of the window, $sz$ is used to measure the distance of the drone from the window and then to regulate the roll angle~\footnote{we use fixed size window and convert $sz$ to distance (in meter in our case) based on this window, in the general case the distance is relative to the window size}.
 \textbf{Vertical difference:} $V_d = \frac{y_1-y_4-(y_2-y_3)}{y_1-y_4+(y_2-y_3)}$, were $y_i$ is the vertical position of $p_i$ in the range of $[-1,1]$ (0 is the center of the image) first is used to measure the angular position of the drone in relation to the window ($\theta$), then $\theta$ and $sz$ are used to calculate the horizontal position parallel to the window surface ($x$ position) of the drone (see Figure~\ref{fig:axis}). 
 
+%TODO - hodai say: not sure how to define this note:
 \begin{remark}
     We assume that process state ($x$) is governed by the linear~\footnote{we make approximation of our non-linear system by linear difference equation} stochastic difference equation:
     $$x_{k}=Ax_{k-1} + Bu_{k} + w_{k}$$
