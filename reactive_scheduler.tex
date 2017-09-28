@@ -44,7 +44,7 @@ fill=orange!20!yellow!20]
 \tikzstyle{post}=[->,shorten >=1pt,>=stealth'] 
 \tikzstyle{bi}=[<->,shorten >=1pt,shorten <=1pt,>=stealth'] 
 \tikzstyle{every initial by arrow}=[initial text={},initial distance=1em,post]
-\tikzstyle{every state}=[minimum size=0.4cm,drop shadow,fill=orange!20!yellow!20]
+%\tikzstyle{every state}=[minimum size=0.4cm,drop shadow,fill=orange!20!yellow!20]
 \tikzstyle{transition}= [post,shorten >=1pt,node distance=2cm, inner sep=2pt,bend angle=20]
 \tikzstyle{box}=[rectangle,draw=black, thick, inner sep=3pt, text centered]
 %%%%%%%% Package for drawing diagrams %%%%%%%%%%%%%%%
@@ -396,10 +396,10 @@ The actuation noise, depicted on the left, is with a unit variance.
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy that produces noise with low variance and a mode with low accuracy that produces errors with higher variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement error in the mode.
 
 We ran this models with three versions of the `Automata Based Scheduler' block. The first version, called `Only High' in Table~\ref{tbl:sim-results}, is where the block acts simply as the constant $1$, ignoring its inputs altogether. Similarly, the term `Only Low' in the table refers to an implementation where the block is the constant $0.25$. These two implementations model the constant schedules, where the sensor is operated in one mode along the whole execution. These two schedules are compared to a third implementation where the block implements the schedule given by the automaton:
+%TODO - hodai say: you forgot  to put the automaton inside figure??
 \begin{center}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=6cm,
 semithick]
-	\tikzstyle{every state}=[]%fill=red,draw=none,text=white]
 
 \node[initial,state] (A)                 {$1$};
 \node[state]         (B) [right of=A]    {$0.2$};
@@ -518,41 +518,158 @@ Based on the separation principle, we can use that controller regardless the mea
 \end{figure}
 
 
+%%%%%%%%%%% Specification Automata %%%%%%%%%%%%%
+\subsection{Analysis and Specification Automata}
+\label{sec:Analysis}
+%As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
+
+The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$, meaning, we want to minimize $|x|$ (see Figure~\ref{fig:axis}). Our goal is to achieve maximum performance with minimal amount of processing time. Obviously, both goals can not be achieved together, the task is to set the best trade-off between them. The problem comes from the main consumer of computation resources, the image-based observation tasks.
+In this part, we use different observation modes together in order to improve the resource utilization, meaning we use more resources (CPU time) only when it is needed, and this way reduce the overall CPU usage without significantly affect the performance.
+In fact, we switch the camera resolution during the flight, the image resolution define the operation mode (see Section~\ref{sec:Observer Design}).
+For simplicity, in this work we examine only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
+
+Analyzing the test results shown in Table~\ref{tab:results}, we see that High quality observation mode provide mean ($x$) error tolerance of 9.5 \textit{cm}~\footnote{All lengths are measured in Centimeter.}, and with the cost of 30\% CPU usage.
+On the other hand, Low quality mode provide worse mean error of co \textit{cm} (three times High quality mode), but cost only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$ . }.
+In this section we show how defining \textit{adaptive scheduling specification} in order to lower the CPU usage without significant worsening of High quality performances.
+
+%TODO - displacement ($x_{k|k}$) schedulers
+First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Fig.~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
+Similarly, ``BAD'' states are when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
+The trash-hold $T_x$ value can be changed to define the desire performances and processing time trade-off.
+Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
+
+%TODO - error ($y_{k|k}$) schedulers
+\begin{dfn}
+\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by Kalman filter}.
+\end{dfn}
+From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
+In the second experiments set we used $A_{err}$ Automaton presented in Fig.~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
+In this case the observer operate in low quality when $\tilde{y}_{k|k} < \alpha_{low}$ (``GOOD'' state), and change to high quality when $\tilde{y}_{k|k} > \alpha_{high}$ (``BAD'' state).
+The trash holds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
+Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
+Note, in Section~\ref{sec:results} we show how this dynamic observer do not result significant affect to the performance but reduce by factor of $\frac{1}{2}$ the processing time.
+
+
+
+
 
 
 
 
 
 %TODO - continue here
-\subsection{Analysis and Specification Automata}
-\label{sec:Analysis}
-%As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
-
-The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$ (see Figure~\ref{fig:axis}). Our goal is to achieve maximum performance with minimal amount of processing time, when both goals can not be achieved together we try to set the best traydoff between them. The main consumer of computation resources in this system is the image based observation tasks.
-
-Analyzing the test results shown in Table~\ref{tab:res ???} we see that High quality observation mode provide 0.4 meter error tolerance meaning we can fly this mode in 1.2 meter wide corridor\footnote{Experiments was done with 0.4 meter wide quad-rotor}, with the cost of 30\% CPU usage. 
-With adaptive scheduling specification we lower the CPU usage without significant worsening of High quality performances.
-
-%TODO - error ($y_{k|k}$) derived schedulers
-%TODO - wha realy "post-fit residual" mean??
-Notation: post-fit residual $\tilde{y}_{k|k}$, is calculated as the absolute difference between the estimated state ($\hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$.
-From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
-Using simple guard automata as shown in Section~\ref{sec:scheduler} we define dynamic observer that choose the operation mode (high or low quality) based on $\tilde{y}_{k|k}$ value, as show in Fig.~\ref{fig:guard auto y_kk}, this observer operate in low quality for ``GOOD'' states, when $\tilde{y}_{k|k} < \alpha_{low}$, and change to high quality if the state is ``BAD'', when $\tilde{y}_{k|k} > \alpha_{high}$, the trash holds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
-Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
-Note, in Section~\ref{sec:results} we show how this dynamic observer do not result any significant affect the performance but reduce by factor of $\frac{1}{2}$ the processing time.
-
-%TODO - displacement ($x_{k|k}$)  derived schedulers
-We also examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$), we define dynamic observer similar to the $\tilde{y}_{k|k}$ based observer described above, but in this case ``GOOD'' states are states where the drone is closer to the center line of the window, and ``BAD'' states are when the drone is far.
-Formally, this observer operate in low quality when $x < \alpha_x$, and in high quality when $x > \alpha_x$, this also produce similar results to the $\tilde{y}_{k|k}$ based observer.
 
 %TODO hodai: complex / agregated schedulers (3 states) - the results shows no improvement I wont to perform new experiments with significant improvement
 
 %TODO - gyro derived?? more suggestions?
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% automata %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{every edge/.append style={font=\small}}
+\tikzset{every node/.append style={font=\small}}
+\begin{figure}[htbp]
+    %\captionsetup{width=0.4\textwidth}
+    \centering
+    \begin{tabular}{c c}
+    
+        % by error
+        \begin{tikzpicture}[node distance=2.5cm,auto]
+            \node (A) [state, accepting] {$\{L\}$};
+            \node (B) [state, accepting] [right of=A] {$\{H\}$};
+            
+            \path[->] (A) edge [loop above] node {$|\tilde{y}_{k|k}| < T_l$} (A);
+            \path[->] (A) edge [bend left] node {$|\tilde{y}_{k|k}| > T_l$} (B);
+            \path[->] (B) edge [bend left] node {$|\tilde{y}_{k|k}| < T_h$} (A);
+            \path[->] (B) edge [loop above] node {$|\tilde{y}_{k|k}| > T_h$} (B);
+            %\path[->] (B) edge [bend left] node {$s_{0.7} \wedge est_1$} (A);
+        \end{tikzpicture}
 
+        &
+        
+        % by displacement (|x|)
+        \begin{tikzpicture}[node distance=2.5cm,auto]
+            \node (A) [state, accepting] {$\{L\}$};
+            \node (B) [state, accepting] [right of=A] {$\{H\}$};
+            
+            \path[->] (A) edge [loop above] node {$|x| < T_x$} (A);
+            \path[->] (A) edge [bend left] node {$|x| > T_x$} (B);
+            \path[->] (B) edge [bend left] node {$|x| < T_x$} (A);
+            \path[->] (B) edge [loop above] node {$|x| > T_x$} (B);
+            %\path[->] (B) edge [bend left] node {$s_{0.7} \wedge est_1$} (A);
+        \end{tikzpicture}
+        
+        \\
+        \LARGE{$A_{err}$} & \LARGE $A_x$ \\[10pt]
+        \hline
+        
+        % 3 state
+        \multicolumn{2}{c}{
+        \begin{tikzpicture}[node distance=3.5cm,auto]
+            \node (A) [state, accepting] {$\{L\}$};
+            \node (B) [state, accepting] [right of=A] {$\{L\}$};
+            \node (C) [state, accepting] [right of=B] {$\{H\}$};
+            
+            \path[->] (A) edge [loop below] node {$|x| < T_x$} (A);
+            \path[->] (A) edge [bend left] node {$|x| > T_x$} (B);
+            \path[->] (B) edge [bend left, above] node {$|x| < T_x$} (A);
+            \path[->] (B) edge [loop below] node {$|x| > T_x \wedge |\tilde{y}_{k|k}| < T_l$} (B);
+            
+            \path[->] (B) edge [bend left] node {$|x| > T_x \wedge |\tilde{y}_{k|k}| < T_l$} (C);
+            \path[->] (C) edge [bend left, above] node {$ |\tilde{y}_{k|k}| < T_h$} (B);
+            \path[->] (C) edge [loop below] node {$ |\tilde{y}_{k|k}| > T_h$} (C);
+            %\path[->] (B) edge [bend left] node {$s_{0.7} \wedge est_1$} (A);
+        \end{tikzpicture}
+        }
+        
+        \\ 
+        \multicolumn{2}{c}{\LARGE $A_{comp1}$}\\[10pt]
+        \hline
+        
+        % 4 state
+        %TODO - Hodai say: this is non-deterministic automata for sipmlicity
+        \multicolumn{2}{c}{
+            \begin{tikzpicture}[node distance=3.5cm,auto]
+            \node (A) [state, accepting] {$\{L\}$};
+            \node (B) [state, accepting] [right of=A] {$\{L\}$};
+            \node (C) [state, accepting] [right of=B] {$\{H\}$};
+            \node (D) [state, accepting] [below of=B] {$\{H\}$};
+
+            \path[->] (A) edge [loop below] node {$|x| < T_x1$} (A);
+            \path[->] (A) edge [bend left] node {$|x| > T_x1$} (B);
+            \path[->] (B) edge [bend left, above] node {$|x| < T_x$} (A);
+            
+            \path[->] (B) edge [loop above] node {$else$} (B);
+            
+            \path[->] (B) edge [bend left] node {$|T_{x2}| > T_x$} (C);
+            \path[->] (C) edge [bend left, above] node {$|T_{x2}| < T_x$} (B);
+            \path[->] (C) edge [loop below] node {$|T_{x2}| > T_x$} (C);
+            
+            \path[->] (B) edge [bend left] node {$|\tilde{y}_{k|k}| > T_l$} (D);
+            \path[->] (D) edge [bend left] node {$|\tilde{y}_{k|k}| < T_h$} (B);
+            \path[->] (D) edge [loop left] node {$|\tilde{y}_{k|k}| > T_h$} (D);
+            \end{tikzpicture}
+        }
+        \\
+        \multicolumn{2}{c}{\LARGE $A_{comp2}$}\\
+        
+        
+    \end{tabular}
+    
+    \caption{The main Automata we used for describing the specifications in the experiments. 
+        \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then next iteration will use small resolution image ($L$), and if too large the high resolution will be used, $T_l$ and $T_h$ are the transition trash-holds.
+        \newline $A_x$ operate similar to $A_{err}$ but uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead $\tilde{y}_{k|k}$, with the trash-hold $T_x$.
+        \newline $A_{comp1}$ and $A_{comp2}$ are the results of composing the $A_{err}$ and $A_x$ ideas.}
+    
+    \label{fig:test_automata}
+\end{figure}
+
+%%%%%%%%%%% results %%%%%%%%%%%%%
 \subsection{Results}
 \label{sec:results}
 TODO - graphs and tables
+
+all statistics are taken from real indoor flights of 1-2 minutes
 
 
 \begin{table}[htbp]
@@ -562,30 +679,30 @@ TODO - graphs and tables
         %\begin{tabular}{m{6em} |  c c c}
             \hline
             %\textbf{Observer}& CPU usage (\%)  & Mean displacement ($x$ axis) & Max displacement ($x$ axis)\\
-            \textbf{Schedule}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (mm)} & \textbf{max(|$x$|) (mm)}\\
+            \textbf{Schedule}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (cm)} & \textbf{max(|$x$|) (cm)}\\
             %\cline{2-3} 
             \hline
-            Only High & 30.9\% & 95 & 312 \\
+            Only High & 30.9\% & 9.5 & 31.2 \\
             \hline
-            Only Low & 2.1\% & 300 & 709 \\
+            Only Low & 2.1\% & 30.0 & 70.9 \\
             \hline
-            error ($y_{k|k}$) derived 10-20 & 10.3\% & 149 & 432 \\
+            $A_{x}$ \newline ($T_x=10$) & 16.6\% & 10.9 & 42.5 \\
             \hline
-            error ($y_{k|k}$) derived 10-15 & 11.7\% & 113 & 363 \\
+            $A_{x}$ \newline ($T_x=20$)  & 14.0\% & 14.1 & \textbf{32.1} \\
             \hline
-            displacement ($x_{k|k}$) derived 10 & 16.6\% & 109 & 425 \\
+            $A_{x}$ \newline ($T_x=30$)  & 8.9\% & 17.4 & \textbf{48.4} \\
             \hline
-            displacement ($x_{k|k}$) derived 20 & 14.0\% & 141 & \textbf{321} \\
+            $A_{err}$ \newline ($T_l=10 , T_h=20$) & 10.3\% & 14.9 & 43.2 \\
             \hline
-            displacement ($x_{k|k}$) derived 30 & 8.9\% & 174 & \textbf{484} \\
+            $A_{err}$ \newline ($T_l=10$ , $T_h=15$) & 11.7\% & 11.3 & 36.3 \\
             \hline
-            4state X10-30 E10-15 & 10.4\% & 127 & 366 \\
+            $A_{comp1}$ \newline ($T_x=10$ , $T_l=10$ , $T_h=15$)  & 8.8\% & 12.9 & 32.1 \\
             \hline
-            3state X10 E10-15 & 8.8\% & 129 & 321 \\
+            $A_{comp2}$ \newline ($T_{x1}=10$ , $T_{x2}=30$ , $T_l=10$ , $T_h=15$)   & 10.4\% & 12.7 & 36.6 \\
             \hline
             
         \end{tabular}
-        \label{tab1}
+        \label{tab:results}
     \end{center}
 \end{table}
 
