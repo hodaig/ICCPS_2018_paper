@@ -33,10 +33,7 @@
 
 %%%%%%%% Packages for drawing diagrams %%%%%%%%%%%%%%%
 \usepackage{tikz,ifthen}
-\usetikzlibrary{arrows,
-	automata
-	%trees,backgrounds,automata,shapes,snakes,plotmarks,fit,calc,positioning,shadows
-}
+\usetikzlibrary{arrows,automata,positioning }
 \tikzstyle{block}=[rectangle, draw, thin, inner sep=3pt, text centered, 
 %drop shadow, 
 fill=orange!20!yellow!20] 
@@ -197,7 +194,7 @@ In this paper we focus on the first two motivations in the above list. The third
 
 \subsection{Implementation in an Auto Pilot Software}
 As our main case study is in flight control, we chose the ArduPilot Mega
-(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks can run in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there iss not enough time to run them now, but the system is designed under the assumption that only happen in rare situations.
+(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks can run in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that only happen in rare situations.
 
 We replaced this table with automata that specify when to run the tasks. Note that automata allow for specifying the requirements that the table represents, using simple circular automata without guards. Note also, that automata can model more advanced constraints with very little addition to the complexity of the scheduler, as we will demonstrate later in the paper. 
 
@@ -205,11 +202,11 @@ We replaced this table with automata that specify when to run the tasks. Note th
 	\scriptsize
 	\begin{lstlisting}
 /*
-scheduler table - all regular tasks apart from
-the fast_loop() should be listed here, along 
-with how often they should be called (in 10ms 
-units) and the maximum time they are expected 
-to take (inmicroseconds)
+  scheduler table - all regular tasks apart from
+  the fast_loop() should be listed here, along 
+  with how often they should be called (in 10ms 
+  units) and the maximum time they are expected 
+  to take (in microseconds)
 */
 static const AP_Scheduler::Task 
      scheduler_tasks[] PROGMEM = {
@@ -236,7 +233,9 @@ static const AP_Scheduler::Task
 
 
 \subsection{Integration With a Kalman Filter}
+The third layer of the approach we propose is the observation that a standard Kalman filter produces information that can be used to guide the automata of the components. 
 
+As we will elaborate in the description of the simulations and of the case study below, we propose to schedule the functions that implement algorithms for sensing and for actuation based on the variance of the estimation that a Kalman filter provides. 
 
 
 
@@ -520,7 +519,7 @@ Note, in Section~\ref{sec:results} we show how this dynamic observer do not resu
             \node (A) [state, accepting] {$\{L\}$};
             \node (B) [state, accepting] [right of=A] {$\{L\}$};
             \node (C) [state, accepting] [right of=B] {$\{H\}$};
-            \node (D) [state, accepting] [below of=B] {$\{H\}$};
+            \node (D) [state, accepting] [below=1cm of B] {$\{H\}$};
 
             \path[->] (A) edge [loop below] node {$|x| < T_x1$} (A);
             \path[->] (A) edge [bend left] node {$|x| > T_x1$} (B);
