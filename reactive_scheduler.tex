@@ -614,18 +614,23 @@ This work of tuning the thresholds and enrich the automata can always continue a
 
 
 %TODO - continue here
+%TODO - hodai: i think this is considered Appendix
 \section{Experiment setup}
 \label{sec:Experiment setup}
 
 In order to perform the experiments we used of-the-shelf quad rotor with \textit{navio2}~\cite{navio} and \textit{Raspberry pi}~\cite{raspberry} flight controller that runs a modified \textit{ArduPilotMega-arducopter}~\cite{APM} software.
 \textit{Navio2} is extension board (shield) for the \textit{Raspberry pi}~\cite{raspberry} platform, it provides the nessesary interfaces such as remote control inputs and motors output, and it's equipped with 3-axes gyroscop and accelerometer MEMS sensors~\cite{MEMS}.
-%cammera
 We used the standard raspberry pi camera. % and modified driver for eficient recording in 
 
 %the window
+The camera frame rate is always 30 frames per second, and before taking each picture the scheduler define the operation resolution of the camera.
+In order to simplify the image processing algorithm, we simplify the problem by ``marking'' the four corners of the window with four illuminated balls.
+The algorithm search for all the pixels of the illuminated balls and calculate the ``center of mass'' of all those pixels as a window corner.
+Higher resolution lead to more accurate measurement of corner ``center of mass''.
 
-%TODO - natnet
-%TODO - vision search algorithem??
+In order to evaluate the performance we need to know the acurate position of the drone during the flight, we use a system called \textit{OptiTrack}.
+\textit{OptiTrack} is a network of high-speed tracking cameras, it provides low latency and high accuracy position and attitude tracking of the drone.
+We use \textit{OptiTrack} as the ground truth.
 
 \section{Conclusions}
 Conclusion goes here.
