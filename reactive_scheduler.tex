@@ -196,9 +196,9 @@ In this paper we focus on the first two motivations in the above list. The third
 
 \subsection{Implementation in an Auto Pilot Software}
 As our main case study is in flight control, we chose the ArduPilot Mega
-(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks can run in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that only happen in rare situations.
+(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that this only happen in rare situations.
 
-We replaced this table with automata that specify when to run the tasks. Note that automata allow for specifying the requirements that the table represents, using simple circular automata without guards. Note also, that automata can model more advanced constraints with very little addition to the complexity of the scheduler, as we will demonstrate later in the paper. 
+To allow a reactive schedule that runs different modes of the software-based controllers depending on their state, we replaced the scheduling table in our version of the APM with automata that specify when to run the tasks. Note that automata allow for specifying the requirements that the table represents, using simple circular automata without guards (see, e.g., \cite{weiss2007automata}). Automata, however, can model more advanced scheduling instructions with very little addition to the complexity of the scheduler, as we will demonstrate in Section~\ref{sec:simulation} and in Section~\ref{sec:caseStady} below.
 
 \begin{figure}
 	\scriptsize
@@ -235,7 +235,7 @@ static const AP_Scheduler::Task
 
 
 \subsection{Integration With a Kalman Filter}
-The third layer of the approach we propose is the observation that a standard Kalman filter produces information that can be used to guide the automata of the components. 
+The third layer of the approach we propose is based on the observation that a standard Kalman filter produces information that can be used to guide the automata of the components. 
 
 As we will elaborate in the description of the simulations and of the case study below, we propose to schedule the functions that implement algorithms for sensing and for actuation based on the variance of the estimation that a Kalman filter provides. 
 
@@ -245,11 +245,11 @@ As we will elaborate in the description of the simulations and of the case study
 \section{A demonstration of the approach in simulation}
 \label{sec:simulation}
 
-Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
+Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. %In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
 
-As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each consumes a different amount of CPU and provides a different level of accuracy. 
+%As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each consumes a different amount of CPU and provides a different level of accuracy. 
 
-Formally, we assume that the system is given as a Linear Time Invariant system, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise. We assume that each sensor can be operated in a range of modes (more than one), each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
+Formally, we assume that the physical system we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise. We assume that each sensor can be operated in a range of modes (at least two), each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
 
 \begin{figure}%[htbp]
 	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
@@ -257,7 +257,7 @@ Formally, we assume that the system is given as a Linear Time Invariant system, 
 	\label{fig:simulink}
 \end{figure}
 
-The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter for the purpose. The filter gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter and the measurement are fed to the scheduler (in addition to, possibly, sending them to the controller) that uses them for deciding the next mode of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
+The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata. The filter gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for controlling the modes of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
 
 We ran the model depicted in Figure~\ref{fig:simulink} with the linear time invariant system:
 \begin{eqnarray*}
