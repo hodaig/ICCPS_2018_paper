@@ -360,6 +360,7 @@ These values are used for controlling the roll angle and the altitude of the dro
 
 %TODO - hodai say: not sure how to define this note:
 %TODO - Gera says: I don't understand what you tried to say with this remark. I sugget to remove it...
+%TODO - Hodai: the observer assume a system model and an sensing model, i need to mote them some ware because I'm referint to them.
 %\begin{remark}
 %    We assume that process state ($x$) is governed by the linear~\footnote{We approximated the non-linear system by a linear difference equation.} stochastic difference equation:
 %    $$x_{k}=Ax_{k-1} + Bu_{k} + w_{k}$$
@@ -423,7 +424,7 @@ In this section we show how defining \textit{adaptive scheduling specification} 
 %displacement ($x_{k|k}$) schedulers
 First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Fig.~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
 Similarly, ``BAD'' states are when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
-The trash-hold $T_x$ value can be changed to define the desire performances and processing time trade-off.
+The threshold $T_x$ value can be changed to define the desire performances and processing time trade-off.
 Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
 
 %error ($y_{k|k}$) schedulers
@@ -433,7 +434,7 @@ Results shows good improvement in term of resource utilization (see Section~\ref
 From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
 In the second experiments set we used $A_{err}$ Automaton presented in Fig.~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
 In this case the observer operate in low quality when $\tilde{y}_{k|k} < \alpha_{low}$ (``GOOD'' state), and change to high quality when $\tilde{y}_{k|k} > \alpha_{high}$ (``BAD'' state).
-The trash holds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
+The thresholds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
 Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
 Note, in Section~\ref{sec:results} we show how this dynamic observer do not result significant affect to the performance but reduce by factor of $\frac{1}{2}$ the processing time.
 
