@@ -249,7 +249,7 @@ Our approach for using automata for scheduling resources in software based contr
 
 %As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each consumes a different amount of CPU and provides a different level of accuracy. 
 
-Formally, we assume that the physical system we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise. We assume that each sensor can be operated in a range of modes (at least two), each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
+Formally, we assume that the physical system we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise with a known variance. As a basis for scheduling, we assume that each sensor can be scheduled to operate in one of a range of modes at each computation slot, each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
 
 \begin{figure}%[htbp]
 	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
@@ -257,7 +257,7 @@ Formally, we assume that the physical system we control is a Linear Time Invaria
 	\label{fig:simulink}
 \end{figure}
 
-The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata. The filter gets as input the actuations and the measurements (the sum of the output and the noise) and also the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for controlling the modes of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
+The scheduling of the modes is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata, as follows. The filter gets as input the actuations,  measurements, and the variance of the measurement noise, which we assume is a function of the sensor mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for controlling the modes of the sensor. In the Simulink model depicted in Figure~\ref{fig:simulink}, the scheduler feeds the variance of the disturbance to the Kalman filter and to the block that multiplies the noise by the variance (the product of a white noise with unit variance and a constant $C$ yields a normally distributed noise with variance $C$).
 
 We ran the model depicted in Figure~\ref{fig:simulink} with the linear time invariant system:
 \begin{eqnarray*}
