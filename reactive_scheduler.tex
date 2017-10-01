@@ -541,8 +541,8 @@ The result shows even greater resource utilization.
     \end{tabular}
     
     \caption{The main Automata we used for describing the specifications in the experiments. 
-        \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then next iteration will use small resolution image ($L$), and if too large the high resolution will be used, $T_l$ and $T_h$ are the transition trash-holds.
-        \newline $A_x$ operate similar to $A_{err}$ but uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead $\tilde{y}_{k|k}$, with the trash-hold $T_x$.
+        \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then next iteration will use small resolution image ($L$), and if too large the high resolution will be used, $T_l$ and $T_h$ are the transition thresholds.
+        \newline $A_x$ operate similar to $A_{err}$ but uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead $\tilde{y}_{k|k}$, with the threshold $T_x$.
         \newline $A_{comp1}$ and $A_{comp2}$ are the results of composing the $A_{err}$ and $A_x$ ideas.}
     
     \label{fig:test_automata}
