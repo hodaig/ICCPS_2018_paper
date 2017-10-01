@@ -421,13 +421,13 @@ Analyzing the test results shown in Table~\ref{tab:results}, we see that High qu
 On the other hand, Low quality mode provide worse mean error of co \textit{cm} (three times High quality mode), but cost only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$ . }.
 In this section we show how defining \textit{adaptive scheduling specification} in order to lower the CPU usage without significant worsening of High quality performances.
 
-%TODO - displacement ($x_{k|k}$) schedulers
+%displacement ($x_{k|k}$) schedulers
 First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Fig.~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
 Similarly, ``BAD'' states are when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
 The trash-hold $T_x$ value can be changed to define the desire performances and processing time trade-off.
 Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
 
-%TODO - error ($y_{k|k}$) schedulers
+%error ($y_{k|k}$) schedulers
 \begin{dfn}
 \textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by Kalman filter}.
 \end{dfn}
@@ -438,17 +438,12 @@ The trash holds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first
 Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
 Note, in Section~\ref{sec:results} we show how this dynamic observer do not result significant affect to the performance but reduce by factor of $\frac{1}{2}$ the processing time.
 
+%complex / agregated schedulers (3-4 states)
+The expressiveness of Automata allows creating even more complex task specification, we can for example combine the approaches of both $A_{err}$ and $A_{x}$.
+In Fig.~\ref{fig:test_automata} there is two examples of such combination, $A_{comp1}$ try to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, and activate $A_{err}$ only if the drone gone far from the center ($T_{x}$ cm from the origin).
+$A_{comp2}$ add another constrain that if the drone gone even farther away ($T_{x2}$ cm from the origin) use only high resolution to bring it back to safety.
+The result shows even greater resource utilization.
 
-
-
-
-
-
-
-
-%TODO - continue here
-
-%TODO hodai: complex / agregated schedulers (3 states) - the results shows no improvement I wont to perform new experiments with significant improvement
 
 %TODO - gyro derived?? more suggestions?
 
@@ -524,15 +519,15 @@ Note, in Section~\ref{sec:results} we show how this dynamic observer do not resu
             \node (C) [state, accepting] [right of=B] {$\{H\}$};
             \node (D) [state, accepting] [below=1cm of B] {$\{H\}$};
 
-            \path[->] (A) edge [loop below] node {$|x| < T_x1$} (A);
-            \path[->] (A) edge [bend left] node {$|x| > T_x1$} (B);
-            \path[->] (B) edge [bend left, above] node {$|x| < T_x$} (A);
+            \path[->] (A) edge [loop below] node {$|x| < T_{x1}$} (A);
+            \path[->] (A) edge [bend left] node {$|x| > T_{x1}$} (B);
+            \path[->] (B) edge [bend left, above] node {$|x| < T_{x1}$} (A);
             
             \path[->] (B) edge [loop above] node {$else$} (B);
             
-            \path[->] (B) edge [bend left] node {$|T_{x2}| > T_x$} (C);
-            \path[->] (C) edge [bend left, above] node {$|T_{x2}| < T_x$} (B);
-            \path[->] (C) edge [loop below] node {$|T_{x2}| > T_x$} (C);
+            \path[->] (B) edge [bend left] node {$|x| > T_{x2}$} (C);
+            \path[->] (C) edge [bend left, above] node {$|x| < T_{x2}$} (B);
+            \path[->] (C) edge [loop below] node {$|x| > T_{x2}$} (C);
             
             \path[->] (B) edge [bend left] node {$|\tilde{y}_{k|k}| > T_l$} (D);
             \path[->] (D) edge [bend left] node {$|\tilde{y}_{k|k}| < T_h$} (B);
@@ -553,12 +548,35 @@ Note, in Section~\ref{sec:results} we show how this dynamic observer do not resu
     \label{fig:test_automata}
 \end{figure}
 
+
 %%%%%%%%%%% results %%%%%%%%%%%%%
 \subsection{Results}
 \label{sec:results}
-TODO - graphs and tables
 
-all statistics are taken from real indoor flights of 1-2 minutes
+Table~\ref{tab:results} summarize the result of flight experiments made using the specification Automata describing in Section~\ref{sec:Analysis}.
+The first column ``\% CPU'' represent processing time usage by image processing task, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$.
+The second column $mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
+All the statistics shoen in the table are from real indoor experiment flights of between 1 to 2 minutes.
+
+
+
+
+
+
+
+
+
+
+%TODO - continue here
+
+%TODO - bsic 2 state and utility explanation
+
+%TODO - 3-4 state
+
+%TODO - adaptive with wind
+
+
+
 
 
 \begin{table}[htbp]
