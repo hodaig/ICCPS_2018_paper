@@ -558,8 +558,54 @@ The first column ``\% CPU'' represent processing time usage by image processing 
 The second column $mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
 All the statistics shoen in the table are from real indoor experiment flights of between 1 to 2 minutes.
 
+We evaluate the result by the \textit{right} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
+As we expect, if we use \textbf{only high} resolution mode we get the best performance but need the processor for large amount of the flight, in other hand \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
+
+In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold value of 10,20 and 30 cm respectively.
+Those schedulers demonstrate that even a simple scheduling change, that schedule the expensive image processing task only when it is \textbf{most needed}, improve the ``resources utilization rate'', scheduler number 3 achieve almost the same performance of the only high resolution scheduler but saves \textbf{half} of the CPU time.
+Schedulers automata 4 and 5 also provide that resources utilization but with different ``trade-offs''.
+
+The $A_{err}$ Automata schedulers (shown in Fig.~\ref{fig:test_automata}) that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
+We test the scheduler with ($T_l=10 , T_h=20$) and ($T_l=10 , T_h=15$) thresholds as shown by schedulers 6 and 7 respectively in Table~\ref{tab:results}.
+They have using even less CPU time but still achieve fairly impressive performance.
+Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit grader resource utilization.
+This work of tuning the thresholds and enrich the automata can always continue and improve the utilization and performance.
+
+%TODO - adaptive with wind - need to extract info from matlab
 
 
+\begin{table}[htbp]
+    \caption{Test Results}
+    \begin{center}
+        \begin{tabular}{c  m{10em} |  m{4em} | m{5em} }
+        %\begin{tabular}{m{6em} |  c c c}
+            \hline
+            %\textbf{Observer}& CPU usage (\%)  & Mean displacement ($x$ axis) & Max displacement ($x$ axis)\\
+            & \textbf{Schedule}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (cm)} \\
+            \hline
+            (1)& Only High & 30.9\% & 9.5\\
+            \hline
+            (2)& Only Low & 2.1\% & 30.0\\
+            \hline
+            (3)& $A_{x}$  ($T_x=10$) & 16.6\% & 10.9\\
+            \hline
+            (4)& $A_{x}$  ($T_x=20$)  & 14.0\% & 14.1  \\
+            \hline
+            (5)& $A_{x}$  ($T_x=30$)  & 8.9\% & 17.4  \\
+            \hline
+            (6)& $A_{err}$ \newline ($T_l=10 , T_h=20$) & 10.3\% & 14.9 \\
+            \hline
+            (7)& $A_{err}$ \newline ($T_l=10 , T_h=15$) & 11.7\% & 11.3 \\
+            \hline
+            (8)& $A_{comp1}$ \newline ($T_x=10$ , $T_l=10$ , $T_h=15$)  & 8.8\% & 12.9 \\
+            \hline
+            (9)& $A_{comp2}$ \newline ($T_{x1}=10$ , $T_{x2}=30$ , $T_l=10$ , $T_h=15$)   & 10.4\% & 12.7 \\
+            \hline
+            
+        \end{tabular}
+        \label{tab:results}
+    \end{center}
+\end{table}
 
 
 
@@ -568,51 +614,6 @@ All the statistics shoen in the table are from real indoor experiment flights of
 
 
 %TODO - continue here
-
-%TODO - bsic 2 state and utility explanation
-
-%TODO - 3-4 state
-
-%TODO - adaptive with wind
-
-
-
-
-
-\begin{table}[htbp]
-    \caption{Test Results}
-    \begin{center}
-        \begin{tabular}{m{8em} |  m{4em} m{5em} m{5em}}
-        %\begin{tabular}{m{6em} |  c c c}
-            \hline
-            %\textbf{Observer}& CPU usage (\%)  & Mean displacement ($x$ axis) & Max displacement ($x$ axis)\\
-            \textbf{Schedule}& \textbf{\% CPU}  & \textbf{mean(|$x$|) (cm)} & \textbf{max(|$x$|) (cm)}\\
-            %\cline{2-3} 
-            \hline
-            Only High & 30.9\% & 9.5 & 31.2 \\
-            \hline
-            Only Low & 2.1\% & 30.0 & 70.9 \\
-            \hline
-            $A_{x}$ \newline ($T_x=10$) & 16.6\% & 10.9 & 42.5 \\
-            \hline
-            $A_{x}$ \newline ($T_x=20$)  & 14.0\% & 14.1 & \textbf{32.1} \\
-            \hline
-            $A_{x}$ \newline ($T_x=30$)  & 8.9\% & 17.4 & \textbf{48.4} \\
-            \hline
-            $A_{err}$ \newline ($T_l=10 , T_h=20$) & 10.3\% & 14.9 & 43.2 \\
-            \hline
-            $A_{err}$ \newline ($T_l=10$ , $T_h=15$) & 11.7\% & 11.3 & 36.3 \\
-            \hline
-            $A_{comp1}$ \newline ($T_x=10$ , $T_l=10$ , $T_h=15$)  & 8.8\% & 12.9 & 32.1 \\
-            \hline
-            $A_{comp2}$ \newline ($T_{x1}=10$ , $T_{x2}=30$ , $T_l=10$ , $T_h=15$)   & 10.4\% & 12.7 & 36.6 \\
-            \hline
-            
-        \end{tabular}
-        \label{tab:results}
-    \end{center}
-\end{table}
-
 \section{Experiment setup}
 \label{sec:Experiment setup}
 
