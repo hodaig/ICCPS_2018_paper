@@ -1,4 +1,4 @@
-%TODO - hodai: fix Automata vs Automaton and axis vs axes
+%TODO - hodai: there is intensive use of (c.f. [?]), in my understanding this mean ("compare to" [?])
 
 \documentclass{sig-alternate-ipsn13}
 
@@ -185,9 +185,10 @@ The rest of the paper is organized as follows: In Section~\ref{sec:architecture}
 \section{The proposed approach}
 \label{sec:architecture}
 
-As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a aoftware module (a set of procedures) accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., each automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers. A second addition is that we have implemented the approach as an enhancement of the internal scheduler of  the ArduPilot Mega (APM) open source unmanned vehicle autopilot software suite~(\url{http://www.ardupilot.co.uk/}). A third contribution of the paper is a proposal of a specific way to use the automata based scheduling framework with a Kalman filter. We elaborate on each of these in the following subsections:
+As proposed in earlier work on automata based scheduling (cf.~\cite{WA07,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a software module (a set of procedures) accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., each automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers. A second addition is that we have implemented the approach as an enhancement of the internal scheduler of  the ArduPilot Mega (APM) open source unmanned vehicle autopilot software suite~(\url{http://www.ardupilot.co.uk/}). A third contribution of the paper is a proposal of a specific way to use the automata based scheduling framework with a Kalman filter. We elaborate on each of these in the following subsections:
 
 \subsection{Guarded Automata as Interfaces for Control and Scheduling}
+%TODO - hodai: maybe prefere say "state values" or "state atribute value" instead of "numbers"
 As our goal is to allow dynamic selection of the computation load in the feedback loops based on the states of the systems, we start with a general software architecture in which each component (implementation of a feedback specific loop) is represented by a code module (in our case, a class in C++) and an automaton that specifies when to invoke its methods. The transition relation of the automaton depends, in addition to the current state, also on a real number produced by the estimator of the feedback loop (we experimented with different options for this number, as discussed below).
 
 The motivations of using automata as described above are: (1) Automata allow for a rich specification language; (2) It is easy to construct schedules that obey the specification with negligible computational burden; (3) Automata theory gives a solid framework for composing the specifications of competing requirements for analysis and for schedule synthesis. 
@@ -196,7 +197,7 @@ In this paper we focus on the first two motivations in the above list. The third
 
 \subsection{Implementation in an Auto Pilot Software}
 As our main case study is in flight control, we chose the ArduPilot Mega
-(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that this only happen in rare situations.
+(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Fig.~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that this only happen in rare situations.
 
 To allow a reactive schedule that runs different modes of the software-based controllers depending on their state, we replaced the scheduling table in our version of the APM with automata that specify when to run the tasks. Note that automata allow for specifying the requirements that the table represents, using simple circular automata without guards (see, e.g., \cite{weiss2007automata}). Automata, however, can model more advanced scheduling instructions with very little addition to the complexity of the scheduler, as we will demonstrate in Section~\ref{sec:simulation} and in Section~\ref{sec:caseStady} below.
 
@@ -237,7 +238,7 @@ static const AP_Scheduler::Task
 \subsection{Integration With a Kalman Filter}
 The third layer of the approach we propose is based on the observation that a standard Kalman filter produces information that can be used to guide the automata of the components. 
 
-As we will elaborate in the description of the simulations and of the case study below, we propose to schedule the functions that implement algorithms for sensing and for actuation based on the variance of the estimation that a Kalman filter provides. 
+As we will elaborate in the description of the simulations and of the case study below, we propose to schedule the functions that implement algorithms for sensing and for actuation based on the error variance of the estimation that a Kalman filter provides. 
 
 
 
@@ -245,11 +246,11 @@ As we will elaborate in the description of the simulations and of the case study
 \section{A demonstration of the approach in simulation}
 \label{sec:simulation}
 
-Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and of the actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. %In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
+Our approach for using automata for scheduling resources in software based controllers is based on the observation that in most systems the computational load is in the implementation of the sensors and actuators, not in the implementation of the controllers that usually consist of quick arithmetic manipulation of a small amount of variables. We therefore focus our attention on allowing a trade-off between CPU usage of sensors and actuators and their accuracy. %In this paper, as a main motivating example, we focus on the case of visual sensors that employ image processing algorithms.
 
 %As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each consumes a different amount of CPU and provides a different level of accuracy. 
 
-Formally, we assume that each of the physical processes we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise with a known variance. As a basis for scheduling, we assume that each sensor can be scheduled to operate in one of a range of modes at each computation slot, each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
+Formally, we assume that each of the physical processes we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Fig.~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise with a known variance. As a basis for scheduling, we assume that each sensor can be scheduled to operate in one of a range of modes at each computation slot, each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
 
 \begin{figure}%[htbp]
 	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
@@ -257,9 +258,9 @@ Formally, we assume that each of the physical processes we control is a Linear T
 	\label{fig:simulink}
 \end{figure}
 
-The scheduling of the modes, for each of the components, is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata, as follows. The filter gets as input the actuations,  measurements, and the variance of the measurement noise, which we assume is a static function (represented here as a translation table) of the mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for advancing the states of the automata. In the Simulink model depicted in Figure~\ref{fig:simulink}, the variance of the disturbance is fed to to the Kalman filter (as its $R$ input) and to the block that multiplies the Gaussian noise by the variance (the product of a white noise with unit variance and a constant $V$ yields a normally distributed noise with variance $V$).
+The scheduling of the modes, for each of the components, is governed by the automata based scheduler as depicted in Fig.~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata, as follows. The filter gets as input the actuations,  measurements, and the variance of the measurement noise, which we assume is a static function (represented here as a translation table) of the mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for advancing the states of the automata. In the Simulink model depicted in Fig.~\ref{fig:simulink}, the covariance matrix of the disturbance, which in this case is $1 \times 1$ matrix consist of the nose variance, is fed to the Kalman filter (as its $R$ input) and to the block that multiplies the Gaussian noise by the variance (the product of a white noise with unit variance and a constant $v$ yields a normally distributed noise with variance $v$).
 
-We ran the model depicted in Figure~\ref{fig:simulink} with the linear time invariant system
+We ran the model depicted in Fig.~\ref{fig:simulink} with the linear time invariant system
 \begin{eqnarray*}
 x(k+1) &=& \begin{pmatrix}
 	1.3  & -0.5  & 0.1 \\
@@ -272,7 +273,7 @@ x(k+1) &=& \begin{pmatrix}
 0.5\end{pmatrix} u(k) \\
 y(k)&=& \begin{pmatrix}1 & 0 &0\end{pmatrix}x(k)
 \end{eqnarray*}
-taken from \url{www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Figure~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
+taken from \url{www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Fig.~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
 The actuation noise, depicted on the left, is with a unit variance. 
 
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy, that produces normally distributed measurement errors with low variance, and a mode with low accuracy that produces normally distributed measurement errors with low variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement errors in the mode.
@@ -309,7 +310,7 @@ semithick]
 	\begin{tabular}{ |  l  | c | c | c | }
 		\hline
 		&  High & Low & Aut. Based \\ \hline \hline
-		\%CPU                    & 0.85 & 0.1  & 0.46 \\ \hline
+		\%CPU                    & 85 & 10  & 46 \\ \hline
 		mean of $|x -\hat{x}|$ & 0.97 & 1.24 & 1.08 \\ \hline
 	\end{tabular}
 	\caption{Simulation results.}
