@@ -348,7 +348,7 @@ The results of the simulation, summarized in Table~\ref{tbl:sim-results}, show, 
 The case study we used to test our concept is the development of a controller that stabilizes a quadrotor in front of a window (see, e.g.,~\url{rpg.ifi.uzh.ch/aggressive_flight.html}).
 We implemented an autonomous controller for that task and evaluated its performance.
 
-The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction, hence we can approximate the system with a linear model. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increases the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance in this system.
+The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction, hence we can approximate the system with a linear model. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increases the measurement noise. We will demonstrate how reactive scheduling of the resolution can serve for balancing resource consumption vs. control performance in this system.
 
 \subsection{Observer Design}
 \label{sec:Observer Design}
@@ -419,31 +419,35 @@ For simplicity, we consider in this paper only two modes: \textit{High quality} 
 
 Looking at the test results shown in Table~\ref{tab:results}, we see that the high quality observation mode provides mean error tolerance of 9.5\textit{cm}~\footnote{All lengths are measured in Centimeter.}  (in the $x$ axis) with the cost of 30\% CPU usage.
 On the other hand, the low quality mode provides mean error of 30\textit{cm} (three times the error obtained in the high quality mode) using only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as ${\text{total time spend in image processing}}/{\text{total flight time}}$. }.
-We explain next how we defined an \textit{adaptive scheduling specification} that combines the advantages of both modes.
+We explain next how we defined an \textit{reactive scheduling specification} that combines the advantages of both modes.
 
 %displacement ($x_{k|k}$) schedulers
 We first examined a straight-forward solution based directly on the current position (the $x$ axis of $\hat{x}_{k|k}$). Using the simple guarded automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we defined a dynamic observer that chooses the operation mode (high or low quality) based on the absolute value of the $x$ part of $\hat{x}_{k|k}$. If the drone is closer to the center line of the window, denoted by $|x| < T_x$, we consider it as a ``safe'' state and go to $L$ mode that schedules the low quality image.
 Similarly, ``BAD'' states is considered when the drone is far, denoted by $|x| > T_x$. In this case, we use high quality image in order to ``fix'' the state.
 The threshold $T_x$ can be changed to define the desired performances and processing time trade-off.
 See Section~\ref{sec:results} for the data we collected by experiments to validate that this indeed achieves the desired goals. 
+% Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
 
 %error ($y_{k|k}$) schedulers
 \begin{dfn}
 \textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C\hat{x}_{k|k}$) and the measured state ($y_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - y_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
 
-From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of the $x$ axis. This means that we can use $\tilde{y}_{k|k}$ values to predict high deviation from $x$.
+From the Low quality experiment graph, shown in Figure~\ref{fig:testPlot}, we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of the window (in the $x$ axis). This means that we can use $\tilde{y}_{k|k}$ values to predict high deviation from $x$.
 
-In the second experiments set we used the $A_{err}$ automaton presented in Figure~\ref{fig:test_automata}. This automaton is similar to $A_x$ wit the difference that it switches states based on $\tilde{y}_{k|k}$ value.
+In the second experiments set we used the $A_{err}$ automaton presented in Figure~\ref{fig:test_automata}. This automaton is similar to $A_x$ with the difference that it switches states based on $\tilde{y}_{k|k}$ value.
 In this case the observer operates in low quality when $\tilde{y}_{k|k} < T_{l}$ (``GOOD'' state) and switches to high quality when $\tilde{y}_{k|k} > T_{h}$ (``BAD'' state).
-The thresholds $T_{l}$ and $ T_{h}$ were initially taken from the low and the high quality graphs and the were fine tuned by experiments. 
+The thresholds $T_{l}$ and $T_{h}$ were initially taken from the low and the high quality graphs and the were fine tuned by experiments. 
 Different $T_{l}$ and $T_{h}$ give different trade-offs of performances and processing time.
 In Section~\ref{sec:results} we show that this dynamic observer gives almost the same performance as the high quality observer with a reduction of a factor of $\frac{1}{2}$ in the processing time.
 
 %complex / agregated schedulers (3-4 states)
 The expressiveness of automata allows for creating even more complex scheduling specification. We can, for example, combine the approaches of both $A_{err}$ and $A_{x}$.
 In Figure~\ref{fig:test_automata} there is two examples of such combinations. $A_{comp1}$ tries to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, by using only low quality, and activates $A_{err}$ only if the drone goes far from the center ($T_{x}$cm from the origin).
-$A_{comp2}$ adds another constraint: if the drone goes even farther away ($T_{x2}$cm from the origin) use only high resolution to bring it back to safety. The results show even better trade-offs with these automata.
+$A_{comp2}$ adds another constraint: if the drone goes even farther away ($T_{x2}$cm from the origin) use only high resolution to bring it back to safety.
+The results show even better resource utilization.
+%TODO - hodai: why not resource utilization?
+%The results show even better trade-offs with these automata.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=90mm]{errorVsPosition.jpg}}
@@ -546,7 +550,7 @@ $A_{comp2}$ adds another constraint: if the drone goes even farther away ($T_{x2
         
     \end{tabular}
     
-    \caption{The main Automata we used for the specifications in the experiments. 
+    \caption{The main Automata we used for the requirements specifications in the experiments. 
         \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then next iteration will use small resolution image ($L$), and if too large the high resolution will be used, $T_l$ and $T_h$ are the transition thresholds.
         \newline $A_x$ operate similar to $A_{err}$ but uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead $\tilde{y}_{k|k}$, with the threshold $T_x$.
         \newline $A_{comp1}$ and $A_{comp2}$ are the results of composing the $A_{err}$ and $A_x$ ideas.}
@@ -565,7 +569,7 @@ $$\frac{\text{total time spend in image processing}}{\text{total flight time}}.$
 The second column ``$mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
 All the statistics shown in the table are from real indoor experiment flights of between one and two minutes.
 
-We show that by applying adaptive scheduling methods we can control the \textit{desire} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
+We show that by applying reactive scheduling methods we can control the \textit{desire} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
 As we expect, if we use \textbf{only high} resolution mode we get the best performance but need the processor for large amount of the flight, in other hand \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
 
 In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold values of 10, 20 and 30cm respectively.
@@ -578,7 +582,7 @@ They have using even less CPU time but still achieve fairly impressive performan
 Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit grader resource utilization.
 This work of tuning the thresholds and enrich the automata can always continue and improve the utilization and performance.
 
-%TODO - adaptive with wind - need to extract info from matlab
+%TODO - reactive with wind - need to extract info from matlab
 
 
 \begin{table}[htbp]
