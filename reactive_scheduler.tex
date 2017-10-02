@@ -583,6 +583,12 @@ Testing the more complex schedulers can contribute even more to the performance 
 This work of tuning the thresholds and enrich the automata can always continue and improve the utilization and performance.
 
 %TODO - reactive with wind - need to extract info from matlab
+Another advantage we achieved from using the dynamic schedulers is a different type of reactiveness, the schedule profile adapts itself to changes in environmental conditions, in order to maintain the performance.
+We experiment this ability by introducing the flying drone to wind. 
+We create artificial wind by turn on a fan while the drone is flying using the $A_{err}$ automaton and the thresholds values $T_l=10$ , $T_h=15$ (number 7 in Table~\ref{tab:results}).
+In this experiment the mean displacement ($mean(|x|$) was 11.8cm which is very close to the displacement without the wind, and the average CPU usage was 13.2\%, instead of 11.7\% usage without the wind.
+This experiment best demonstrate our statement, that resources is allocated only when is needed.
+
 
 
 \begin{table}[htbp]
