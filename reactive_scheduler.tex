@@ -197,7 +197,7 @@ In this paper we focus on the first two motivations in the above list. The third
 
 \subsection{Implementation in an Auto Pilot Software}
 As our main case study is in flight control, we chose the ArduPilot Mega
-(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Fig.~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that this only happen in rare situations.
+(APM) platform for experiments. To this end, we implemented a basic automata based scheduler for this platform. The built-in task scheduling specification in APM consist of a table as shown in Figure~\ref{fig:apm-scheduler}. This table is easy to maintain and to use, but it is used under an assumption that there is enough CPU power to run all the tasks in the specified frequencies. APM does contain a mechanism to handle overruns, by moving tasks to the next window when there is not enough time to run them now, but the system is designed under the assumption that this only happen in rare situations.
 
 To allow a reactive schedule that runs different modes of the software-based controllers depending on their state, we replaced the scheduling table in our version of the APM with automata that specify when to run the tasks. Note that automata allow for specifying the requirements that the table represents, using simple circular automata without guards (see, e.g., \cite{weiss2007automata}). Automata, however, can model more advanced scheduling instructions with very little addition to the complexity of the scheduler, as we will demonstrate in Section~\ref{sec:simulation} and in Section~\ref{sec:caseStady} below.
 
@@ -250,7 +250,7 @@ Our approach for using automata for scheduling resources in software based contr
 
 %As said in Section~\ref{sec:architecture}, we propose to implement the resource scheduling decisions using automata that control which procedures are invoked in the control loops. More specifically, for sensors or actuators that require heavy computations, such as vision based sensors, we propose that the software engineers develop several modes of sensing, each consumes a different amount of CPU and provides a different level of accuracy. 
 
-Formally, we assume that each of the physical processes we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Fig.~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise with a known variance. As a basis for scheduling, we assume that each sensor can be scheduled to operate in one of a range of modes at each computation slot, each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
+Formally, we assume that each of the physical processes we control is a Linear Time Invariant (LTI) system with a known model, as depicted in Figure~\ref{fig:simulink}. The inaccuracies of the sensors and of the actuators are modeled as additive Gaussian noise with a known variance. As a basis for scheduling, we assume that each sensor can be scheduled to operate in one of a range of modes at each computation slot, each mode consuming a certain percentage of the CPU and giving a certain variance of the measurement noise.
 
 \begin{figure}%[htbp]
 	\centerline{\includegraphics[width=85mm]{SimulinkModel.jpg}}
@@ -258,9 +258,9 @@ Formally, we assume that each of the physical processes we control is a Linear T
 	\label{fig:simulink}
 \end{figure}
 
-The scheduling of the modes, for each of the components, is governed by the automata based scheduler as depicted in Fig.~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata, as follows. The filter gets as input the actuations,  measurements, and the variance of the measurement noise, which we assume is a static function (represented here as a translation table) of the mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for advancing the states of the automata. In the Simulink model depicted in Fig.~\ref{fig:simulink}, the covariance matrix of the disturbance, which in this case is $1 \times 1$ matrix consist of the nose variance, is fed to the Kalman filter (as its $R$ input) and to the block that multiplies the Gaussian noise by the variance (the product of a white noise with unit variance and a constant $v$ yields a normally distributed noise with variance $v$).
+The scheduling of the modes, for each of the components, is governed by the automata based scheduler as depicted in Figure~\ref{fig:simulink}. We propose to use a standard Kalman filter as a tool to gather the information that guides the state evolution of the automata, as follows. The filter gets as input the actuations,  measurements, and the variance of the measurement noise, which we assume is a static function (represented here as a translation table) of the mode chosen by the scheduler. The output of the Kalman filter is fed to the scheduler that uses it for advancing the states of the automata. In the Simulink model depicted in Figure~\ref{fig:simulink}, the covariance matrix of the disturbance, which in this case is $1 \times 1$ matrix consist of the nose variance, is fed to the Kalman filter (as its $R$ input) and to the block that multiplies the Gaussian noise by the variance (the product of a white noise with unit variance and a constant $v$ yields a normally distributed noise with variance $v$).
 
-We ran the model depicted in Fig.~\ref{fig:simulink} with the linear time invariant system
+We ran the model depicted in Figure~\ref{fig:simulink} with the linear time invariant system
 \begin{eqnarray*}
 x(k+1) &=& \begin{pmatrix}
 	1.3  & -0.5  & 0.1 \\
@@ -273,7 +273,7 @@ x(k+1) &=& \begin{pmatrix}
 0.5\end{pmatrix} u(k) \\
 y(k)&=& \begin{pmatrix}1 & 0 &0\end{pmatrix}x(k)
 \end{eqnarray*}
-taken from \url{www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Fig.~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
+taken from \url{www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Figure~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
 The actuation noise, depicted on the left, is with a unit variance. 
 
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy, that produces normally distributed measurement errors with low variance, and a mode with low accuracy that produces normally distributed measurement errors with low variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement errors in the mode.
@@ -391,10 +391,10 @@ Similarly to the gain of kalman filter, $K$ represent the ratio between process 
 \subsection{Controller Design}
 
 In this experiment, we consider the task of \textit{hovering in front of the window}, the controller objective is to hover parallel to the window (center of $x$ axis) at the altitude of the window within distance of 2 meters in front of the window and face pointed to the center of the window (yaw angle).
-We consider this point as the origin and the coordinates are according to Fig.~\ref{fig:axis}.
+We consider this point as the origin and the coordinates are according to Figure~\ref{fig:axis}.
 
 The controller consist of 4 independent feedback control loops, altitude, yaw angel, pitch and roll.
-Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller which his input is the required distance or $x$ position relative to the window accordingly, the high level controller outputs the required angle (acceleration) to the low level controller as show in Fig.~\ref{fig:controllerStracture}.
+Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller which his input is the required distance or $x$ position relative to the window accordingly, the high level controller outputs the required angle (acceleration) to the low level controller as show in Figure~\ref{fig:controllerStracture}.
 All the loops control regulate the position or attitude relative to the window.
 The inertial (angular) feedback is generated by the existing \textit{Attitude and heading reference system} (AHRS) library of ArduPilot see Section~\ref{sec:Experiment setup}, and the window related feedback come directly from the observer described in Section~\ref{sec:Observer Design}.
 
@@ -423,7 +423,7 @@ On the other hand, Low quality mode provide worse mean error of co \textit{cm} (
 In this section we show how defining \textit{adaptive scheduling specification} in order to lower the CPU usage without significant worsening of High quality performances.
 
 %displacement ($x_{k|k}$) schedulers
-First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Fig.~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
+First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
 Similarly, ``BAD'' states are when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
 The threshold $T_x$ value can be changed to define the desire performances and processing time trade-off.
 Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
@@ -433,7 +433,7 @@ Results shows good improvement in term of resource utilization (see Section~\ref
 \textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
 From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
-In the second experiments set we used $A_{err}$ Automaton presented in Fig.~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
+In the second experiments set we used $A_{err}$ Automaton presented in Figure~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
 In this case the observer operate in low quality when $\tilde{y}_{k|k} < \alpha_{low}$ (``GOOD'' state), and change to high quality when $\tilde{y}_{k|k} > \alpha_{high}$ (``BAD'' state).
 The thresholds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
 Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
@@ -441,7 +441,7 @@ Note, in Section~\ref{sec:results} we show how this dynamic observer do not resu
 
 %complex / agregated schedulers (3-4 states)
 The expressiveness of Automata allows creating even more complex task specification, we can for example combine the approaches of both $A_{err}$ and $A_{x}$.
-In Fig.~\ref{fig:test_automata} there is two examples of such combination, $A_{comp1}$ try to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, and activate $A_{err}$ only if the drone gone far from the center ($T_{x}$ cm from the origin).
+In Figure~\ref{fig:test_automata} there is two examples of such combination, $A_{comp1}$ try to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, and activate $A_{err}$ only if the drone gone far from the center ($T_{x}$ cm from the origin).
 $A_{comp2}$ add another constrain that if the drone gone even farther away ($T_{x2}$ cm from the origin) use only high resolution to bring it back to safety.
 The result shows even greater resource utilization.
 
@@ -567,7 +567,7 @@ In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implemen
 Those schedulers demonstrate that even a simple scheduling change, that schedule the expensive image processing task only when it is \textbf{most needed}, improve the ``resources utilization rate'', scheduler number 3 achieve almost the same performance of the only high resolution scheduler but saves \textbf{half} of the CPU time.
 Schedulers automata 4 and 5 also provide that resources utilization but with different ``trade-offs''.
 
-The $A_{err}$ Automata schedulers (shown in Fig.~\ref{fig:test_automata}) that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
+The $A_{err}$ Automata schedulers (shown in Figure~\ref{fig:test_automata}) that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
 We test the scheduler with ($T_l=10 , T_h=20$) and ($T_l=10 , T_h=15$) thresholds as shown by schedulers 6 and 7 respectively in Table~\ref{tab:results}.
 They have using even less CPU time but still achieve fairly impressive performance.
 Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit grader resource utilization.
