@@ -430,7 +430,7 @@ Results shows good improvement in term of resource utilization (see Section~\ref
 
 %error ($y_{k|k}$) schedulers
 \begin{dfn}
-\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by Kalman filter}.
+\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
 From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
 In the second experiments set we used $A_{err}$ Automaton presented in Fig.~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
@@ -555,7 +555,8 @@ The result shows even greater resource utilization.
 \label{sec:results}
 
 Table~\ref{tab:results} summarizes the result of flight experiments made using the specification automata described in Section~\ref{sec:Analysis}.
-The first column ``\% CPU'' represent processing time usage by image processing task, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$.
+The first column ``\% CPU'' represent processing time usage by image processing task, and is calculates as 
+$$\frac{\text{total time spend in image processing}}{\text{total flight time}}.$$
 The second column $mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
 All the statistics shoen in the table are from real indoor experiment flights of between 1 to 2 minutes.
 
