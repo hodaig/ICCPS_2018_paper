@@ -352,7 +352,7 @@ The part of the controller that we focused on is the vision based position contr
 
 \subsection{Observer Design}
 \label{sec:Observer Design}
-We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners from the image (see Section~\ref{sec:Experiment setup} for more detail), %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
+We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners from the image (see Section~\ref{sec:Experiment setup} for more details+), %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
 and extracts the following four quantities based on the shape and location of the window corners in the image plane: %$S_x$, $S_y$, $V_d$ and $sz$, as follows.
 \textbf{Center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' along the $x$ and $y$ axes of the image, respectively, normalized to the range of $[-1,1]$.
 These values are used for controlling the roll angle and the altitude of the drone, respectively. 
@@ -372,14 +372,14 @@ These values are used for controlling the roll angle and the altitude of the dro
 
 As common in engineering practices, we pass these numbers to a filter that gives us a more informed state estimation. 
 %TODO : check if its realy shown there:
-In theory, as shown in the simulation at Section~\ref{sec:simulation}, we should use Kalman filter estimator for best state estimation. As we deal with a non-linear system here, and because the process noise distribution is not known (it is significantly affected by the varying state of the battery), and because Kalman filter adds complexity in the code, we propose to use a complementary filter.
+In theory, as demonstrated in the simulation in Section~\ref{sec:simulation}, we should use Kalman filter estimator for best state estimation. As we deal with a non-linear system here, and because the process noise distribution is not known (it is significantly affected by the varying state of the battery), and because Kalman filter adds complexity in the code, we propose to use a complementary filter.
 A complementary filter is actually a steady-state Kalman filter for a certain class of filtering problems~\cite{complementaryVSKalman}.
 Specifically, in our case study, we implemented a two steps estimator that: (1) \textit{predicts} the current state evolved from the previous state (denoted by $\hat{x}_{k|k-1}$) using a linearized model of the system, and then \textit{updates} the prediction with current state measurement from the image, denoted by $y_k$.
 The result of the estimation, denoted by $\hat{x}_{k|k}$, is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measured state ($C^{-1}y_k$)~\footnote{The matrix $C$ is the measurement matrix as shown in the model at Figure~\ref{fig:simulink}}:
-$ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) C^{-1}y_k $ were $K$ is constant approximation of the Kalman filter gain ($K_k$).
+$ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) C^{-1}y_k $ were $K$ is constant that equals the Kalman filter gain ($K_k$) at a steady-state.
 
-The image processing have few different operation modes and every mode has different accuracy (shown in Section~\ref{sec:Analysis}).
-Similarly to the gain of kalman filter, $K$ represent the ratio between process noise and measurement noise distribution, therefore we define $K$ separately for each mode to achieve the best estimation in each mode.
+The image processing algorithms cn run in different operation modes, each mode with different accuracy (see Section~\ref{sec:Analysis}).
+The constant $K$ represents the ratio between the variance of the process noise and the variance of the measurement noise. To achieve best peformace, we define a separate value for $K$ for each mode.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=80mm]{axis.jpg}}
@@ -390,15 +390,15 @@ Similarly to the gain of kalman filter, $K$ represent the ratio between process 
 
 \subsection{Controller Design}
 
-In this experiment, we consider the task of hovering in front of the window. The controller objective is to hover parallel to the window (center of $z$ axis in Figure~\ref{fig:axis}) at the altitude of the window within distance of 2 meters in front of the window ($y=x=0 , z=2$) and face pointed to the center of the window (yaw angle).
+In this experiment, we consider the task of hovering in front of the window. The controller objective is to hover parallel to the window (center of $z$ axis in Figure~\ref{fig:axis}) at the altitude of the window within distance of two meters in front of the window ($y=x=0 , z=2$) and face pointed to the center of the window (yaw angle).
 We consider this point as the origin and the coordinates are according to Figure~\ref{fig:axis}.
 
-The controller consist of 4 independent feedback control loops, altitude, yaw angel, pitch and roll.
-Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller that the input for it is the required distance ($z$ position) or $x$ position relative to the window, the high level controller outputs the required angle (acceleration) to the low level controller as show in Figure~\ref{fig:controllerStracture}.
+The controller consists of four independent feedback loops: altitude, yaw, pitch, and roll.
+The pitch and the roll controllers are copies of the same attitude controller which gets as input the required pitch or roll angel, respectively. These controllers runs in parallel to a position controller that maintains the required distance ($z$ position) and displacement ($x$ position) relative to the window, the position level controller outputs the required angle (acceleration) to the attitude =controller as show in Figure~\ref{fig:controllerStracture}.
 All the control loops regulate the position or attitude relative to the window.
 The inertial (pitch and roll) feedback for the low level controller is generated by the existing \textit{Attitude and heading reference system} (AHRS) library of ArduPilot see Section~\ref{sec:Experiment setup}, and the position feedback ($x$, $y$ and $z$ position) came directly from the observer described in Section~\ref{sec:Observer Design}.
 
-Based on the \textit{principle of separation of estimation and control}, we can use that controller regardless the measurement quality, in practice, we implement basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters with the highest resolution observer.
+Based on the \textit{principle of separation of estimation and control}, we can use that controller regardless of the measurement quality. In practice, we implemented a basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters with the highest resolution observer.
 
 %TODO - Hodai say: I think this figure is un-nesessary.
 \begin{figure}[htbp]
