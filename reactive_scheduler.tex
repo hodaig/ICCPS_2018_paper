@@ -561,10 +561,10 @@ The result shows even greater resource utilization.
 Table~\ref{tab:results} summarizes the result of flight experiments made using the specification automata described in Section~\ref{sec:Analysis}.
 The first column ``\% CPU'' represent processing time usage by image processing task, and is calculates as 
 $$\frac{\text{total time spend in image processing}}{\text{total flight time}}.$$
-The second column $mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
-All the statistics shoen in the table are from real indoor experiment flights of between 1 to 2 minutes.
+The second column ``$mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
+All the statistics shown in the table are from real indoor experiment flights of between one and two minutes.
 
-We evaluate the result by the \textit{right} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
+We show that by applying adaptive scheduling methods we can control the \textit{desire} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
 As we expect, if we use \textbf{only high} resolution mode we get the best performance but need the processor for large amount of the flight, in other hand \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
 
 In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold values of 10, 20 and 30cm respectively.
