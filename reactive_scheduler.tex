@@ -185,7 +185,7 @@ The rest of the paper is organized as follows: In Section~\ref{sec:architecture}
 \section{The proposed approach}
 \label{sec:architecture}
 
-As proposed in earlier work on automata based scheduling (cf.~\cite{weiss2007automata,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a software module (a set of procedures) accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., each automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers. A second addition is that we have implemented the approach as an enhancement of the internal scheduler of  the ArduPilot Mega (APM) open source unmanned vehicle autopilot software suite~(\url{http://www.ardupilot.co.uk/}). A third contribution of the paper is a proposal of a specific way to use the automata based scheduling framework with a Kalman filter. We elaborate on each of these in the following subsections:
+As proposed in earlier work on automata based scheduling (cf.~\cite{weiss2007automata,RTComposer,AW08}) we aim at a development process where a system is built as a composition of a set of components where each component is a software module (a set of procedures) accompanied with an automaton. Our addition here is that we allow the automata to be guarded, i.e., each automaton acts as a specification of a reactive system that tells the scheduler which functions of a component it may run in each slot depending on the dynamic state of the controllers. A second addition is that we have implemented the approach as an enhancement of the internal scheduler of  the ArduPilot Mega (APM) open source unmanned vehicle autopilot software suite~(\url{ardupilot.co.uk/}). A third contribution of the paper is a proposal of a specific way to use the automata based scheduling framework with a Kalman filter. We elaborate on each of these in the following subsections:
 
 \subsection{Guarded Automata as Interfaces for Control and Scheduling}
 %TODO - hodai: maybe prefere say "state values" or "state atribute value" instead of "numbers"
@@ -273,7 +273,7 @@ x(k+1) &=& \begin{pmatrix}
 0.5\end{pmatrix} u(k) \\
 y(k)&=& \begin{pmatrix}1 & 0 &0\end{pmatrix}x(k)
 \end{eqnarray*}
-taken from \url{www.mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Figure~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
+taken from \url{mathworks.com/help/control/examples/kalman-filter-design.html}. As seen in Figure~\ref{fig:simulink}, we injected a sinusoidal input (with $amplitude=bias=frequency=1$) to this system. 
 The actuation noise, depicted on the left, is with a unit variance. 
 
 The `Automata Based Scheduler' block is designed to set the variance of the sensing noise dynamically to be either $0.25$ or $1$ at each step of the simulation. This models a sensor that has two modes of operation: a mode with high accuracy, that produces normally distributed measurement errors with low variance, and a mode with low accuracy that produces normally distributed measurement errors with low variance. We assume, for the performance measurements presented below, that the CPU consumption of each mode is $\%CPU=1.1-errVar$, where $errVar$ is the variance of measurement errors in the mode.
