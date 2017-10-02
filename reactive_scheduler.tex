@@ -348,11 +348,11 @@ The results of the simulation, summarized in Table~\ref{tbl:sim-results}, show, 
 The case study we used to test our concept is the development of a controller that stabilizes a quadrotor in front of a window (see, e.g.,~\url{rpg.ifi.uzh.ch/aggressive_flight.html}).
 We implemented an autonomous controller for that task and evaluated its performance.
 
-The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increases the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance in this system.
+The part of the controller that we focused on is the vision based position controller. Specifically, the main controller, that we will describe below, uses a standard low-level angular controller and a simple image processing algorithm that identifies the position of the corners of the window in the image plane\footnote{In the experiment, to simplify the image processing algorithm, we marked the corners of the window with led lights.}. Its goal is to regulate the position of the quadrotor by tilting it. Note that rotations of the quadrotor generate a more-or-less proportional accelerations in a corresponding direction, hence we can approximate the system with a linear model. A main challenge for this controller is that the computer vision algorithm takes significant time to compute relative to the fast control loop. We can decrease computation time by lowering the resolution, but this also increases the measurement noise. We will demonstrate how adaptive scheduling of the resolution can serve for balancing resource consumption vs. control performance in this system.
 
 \subsection{Observer Design}
 \label{sec:Observer Design}
-We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners, %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
+We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners from the image (see Section~\ref{sec:Experiment setup} for more detail), %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
 and extracts the following four quantities based on the shape and location of the window corners in the image plane: %$S_x$, $S_y$, $V_d$ and $sz$, as follows.
 \textbf{Center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' along the $x$ and $y$ axes of the image, respectively, normalized to the range of $[-1,1]$.
 These values are used for controlling the roll angle and the altitude of the drone, respectively. 
@@ -374,12 +374,12 @@ As common in engineering practices, we pass these numbers to a filter that gives
 %TODO : check if its realy shown there:
 In theory, as shown in the simulation at Section~\ref{sec:simulation}, we should use Kalman filter estimator for best state estimation. As we deal with a non-linear system here, and because the process noise distribution is not known (it is significantly affected by the varying state of the battery), and because Kalman filter adds complexity in the code, we propose to use a complementary filter.
 A complementary filter is actually a steady-state Kalman filter for a certain class of filtering problems~\cite{complementaryVSKalman}.
-Specifically, in our case study, we implemented a two steps estimator that: (1) \textit{predicts} the current state evolved from the previous state ($\hat{x}_{k|k-1}$) using a linearized model of the system and then \textit{updates} the prediction with current state measurement from the image, denoted by $z_k$.
-The result of the estimation (denoted by $\hat{x}_{k|k}$) is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measured state ($C^{-1}z_k$):
-$ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) C^{-1}z_k $ were $K$ is constant approximation of the Kalman filter gain ($K_k$).
+Specifically, in our case study, we implemented a two steps estimator that: (1) \textit{predicts} the current state evolved from the previous state (denoted by $\hat{x}_{k|k-1}$) using a linearized model of the system, and then \textit{updates} the prediction with current state measurement from the image, denoted by $y_k$.
+The result of the estimation, denoted by $\hat{x}_{k|k}$, is a complementary filter of the prediction ($\hat{x}_{k|k-1}$) and the measured state ($C^{-1}y_k$)~\footnote{The matrix $C$ is the measurement matrix as shown in the model at Figure~\ref{fig:simulink}}:
+$ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) C^{-1}y_k $ were $K$ is constant approximation of the Kalman filter gain ($K_k$).
 
-The image processing have few different operation modes, every mode has different accuracy (shown in Section~\ref{sec:Analysis}).
-Similarly to the gain of kalman filter, $K$ represent the ratio between process noise and measurement noise distribution, therefore $K$ is defined separately for each mode to achieve the best estimation in each mode.
+The image processing have few different operation modes and every mode has different accuracy (shown in Section~\ref{sec:Analysis}).
+Similarly to the gain of kalman filter, $K$ represent the ratio between process noise and measurement noise distribution, therefore we define $K$ separately for each mode to achieve the best estimation in each mode.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=80mm]{axis.jpg}}
@@ -390,15 +390,15 @@ Similarly to the gain of kalman filter, $K$ represent the ratio between process 
 
 \subsection{Controller Design}
 
-In this experiment, we consider the task of \textit{hovering in front of the window}, the controller objective is to hover parallel to the window (center of $x$ axis) at the altitude of the window within distance of 2 meters in front of the window and face pointed to the center of the window (yaw angle).
+In this experiment, we consider the task of hovering in front of the window. The controller objective is to hover parallel to the window (center of $z$ axis in Figure~\ref{fig:axis}) at the altitude of the window within distance of 2 meters in front of the window ($y=x=0 , z=2$) and face pointed to the center of the window (yaw angle).
 We consider this point as the origin and the coordinates are according to Figure~\ref{fig:axis}.
 
 The controller consist of 4 independent feedback control loops, altitude, yaw angel, pitch and roll.
-Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller which his input is the required distance or $x$ position relative to the window accordingly, the high level controller outputs the required angle (acceleration) to the low level controller as show in Figure~\ref{fig:controllerStracture}.
-All the loops control regulate the position or attitude relative to the window.
-The inertial (angular) feedback is generated by the existing \textit{Attitude and heading reference system} (AHRS) library of ArduPilot see Section~\ref{sec:Experiment setup}, and the window related feedback come directly from the observer described in Section~\ref{sec:Observer Design}.
+Pitch and roll controllers composed from, low level attitude controller which his input is the required pitch or roll angel accordingly, and high level position controller that the input for it is the required distance ($z$ position) or $x$ position relative to the window, the high level controller outputs the required angle (acceleration) to the low level controller as show in Figure~\ref{fig:controllerStracture}.
+All the control loops regulate the position or attitude relative to the window.
+The inertial (pitch and roll) feedback for the low level controller is generated by the existing \textit{Attitude and heading reference system} (AHRS) library of ArduPilot see Section~\ref{sec:Experiment setup}, and the position feedback ($x$, $y$ and $z$ position) came directly from the observer described in Section~\ref{sec:Observer Design}.
 
-Based on the separation principle, we can use that controller regardless the measurement quality, in practice we implement basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters with the highest resolution observer.
+Based on the \textit{principle of separation of estimation and control}, we can use that controller regardless the measurement quality, in practice, we implement basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters with the highest resolution observer.
 
 %TODO - Hodai say: I think this figure is un-nesessary.
 \begin{figure}[htbp]
@@ -413,35 +413,35 @@ Based on the separation principle, we can use that controller regardless the mea
 \label{sec:Analysis}
 %As describe in Section~\ref{sec:???}, the image processing have few different operation modes, every mode use different image resolution, better image resolution results in more accurate measurement but consume more processing time, changing operation modes allows us to control the trade off between mesurment quality and processing time as shown in Table~\ref{tab:tradeoff ???}.
 
-The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$, meaning, we want to minimize $|x|$ (see Figure~\ref{fig:axis}). Our goal is to achieve maximum performance with minimal amount of processing time. Obviously, both goals can not be achieved together, the task is to set the best trade-off between them. The problem comes from the main consumer of computation resources, the image-based observation tasks.
+The objective of the system is to maintain stable hovering in front of the window. Hence, the performances of the system is measured by the amount of deviation from the center line of the window in the critical axis $x$, meaning, we want to minimize $\left| x \right|$ (see Figure~\ref{fig:axis}). Our goal is to achieve maximum performance with minimal amount of processing time. Obviously, both goals can not be achieved together, the task is to set the best trade-off between processing resource and quality of measurement. The problem comes from the main consumer of computation resources, the window image-based observation tasks.
 In this part, we use different observation modes together in order to improve the resource utilization, meaning we use more resources (CPU time) only when it is needed, and this way reduce the overall CPU usage without significantly affect the performance.
-In fact, we switch the camera resolution during the flight, the image resolution define the operation mode (see Section~\ref{sec:Observer Design}).
-For simplicity, in this work we examine only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
+In fact, we switch between camera resolutions during the flight, the observer modes are defined by the image resolution they are using (see Section~\ref{sec:Observer Design}).
+For simplicity, in this work we consider only two modes, \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
 
-Analyzing the test results shown in Table~\ref{tab:results}, we see that High quality observation mode provide mean ($x$) error tolerance of 9.5 \textit{cm}~\footnote{All lengths are measured in Centimeter.}, and with the cost of 30\% CPU usage.
-On the other hand, Low quality mode provide worse mean error of co \textit{cm} (three times High quality mode), but cost only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$ . }.
-In this section we show how defining \textit{adaptive scheduling specification} in order to lower the CPU usage without significant worsening of High quality performances.
+Analyzing the test results shown in Table~\ref{tab:results}, we see that High quality observation mode provide mean error tolerance of 9.5\textit{cm}~\footnote{All lengths are measured in Centimeter.}  (in the $x$ axis), and with the cost of 30\% CPU usage.
+On the other hand, Low quality mode provide worse mean error of 30\textit{cm} (three times of the High quality mode), but cost only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as $\frac{\text{total time spend in image processing}}{\text{total flight time}}$ . }.
+In this section we show how to define \textit{adaptive scheduling specification} in order to lower the CPU usage without significant worsening of High quality performances.
 
 %displacement ($x_{k|k}$) schedulers
-First we examine a straight-forward solution based directly on the current position (the $x$ part of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the $x$ part of $\hat{x}_{k|k}$ absolute value, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
-Similarly, ``BAD'' states are when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
+First we examine a straight-forward solution based directly on the current position (the $x$ axis of $\hat{x}_{k|k}$). Using the simple guard automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we define dynamic observer that choose the operation mode (high or low quality) based on the absolute value of the $x$ part of $\hat{x}_{k|k}$, if the drone is closer to the center line of the window, noted by $|x| < T_x$, we consider it as ``safe'' state and go to $L$ mode that use the low quality image.
+Similarly, ``BAD'' states is considered when the drone is far, noted by $|x| > T_x$, then we use High quality image in order to ``fix'' the bad state.
 The threshold $T_x$ value can be changed to define the desire performances and processing time trade-off.
 Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
 
 %error ($y_{k|k}$) schedulers
 \begin{dfn}
-\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C \cdot \hat{x}_{k|k}$) and the measured state ($z_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - z_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
+\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C\hat{x}_{k|k}$) and the measured state ($y_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - y_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
-From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ vales to predict high deviation from $x$.
+From the Low quality experiment graph we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of $x$ axis, we can use $\tilde{y}_{k|k}$ values to predict high deviation from $x$.
 In the second experiments set we used $A_{err}$ Automaton presented in Figure~\ref{fig:test_automata}, which is similar to $A_x$ but switch states based on $\tilde{y}_{k|k}$ value.
-In this case the observer operate in low quality when $\tilde{y}_{k|k} < \alpha_{low}$ (``GOOD'' state), and change to high quality when $\tilde{y}_{k|k} > \alpha_{high}$ (``BAD'' state).
-The thresholds values $ \alpha_{low}$ and $ \alpha_{high}$ has determined first from the low and high quality graph and fine tuned by experiments. 
-Different $ \alpha_{low}$ and $ \alpha_{high}$ achieve different trade-offs of performances and processing time.
+In this case the observer operate in low quality when $\tilde{y}_{k|k} < T_{l}$ (``GOOD'' state), and change to high quality when $\tilde{y}_{k|k} > T_{h}$ (``BAD'' state).
+The thresholds values $ T_{l}$ and $ T_{h}$ has determined first from the low and high quality graph and fine tuned by experiments. 
+Different $T_{l}$ and $T_{h}$ achieve different trade-offs of performances and processing time.
 Note, in Section~\ref{sec:results} we show how this dynamic observer do not result significant affect to the performance but reduce by factor of $\frac{1}{2}$ the processing time.
 
 %complex / agregated schedulers (3-4 states)
 The expressiveness of Automata allows creating even more complex task specification, we can for example combine the approaches of both $A_{err}$ and $A_{x}$.
-In Figure~\ref{fig:test_automata} there is two examples of such combination, $A_{comp1}$ try to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, and activate $A_{err}$ only if the drone gone far from the center ($T_{x}$ cm from the origin).
+In Figure~\ref{fig:test_automata} there is two examples of such combination, $A_{comp1}$ try to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, by using only low quality, and activate $A_{err}$ only if the drone gone far from the center ($T_{x}$ cm from the origin).
 $A_{comp2}$ add another constrain that if the drone gone even farther away ($T_{x2}$ cm from the origin) use only high resolution to bring it back to safety.
 The result shows even greater resource utilization.
 
