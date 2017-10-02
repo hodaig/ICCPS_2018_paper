@@ -563,7 +563,7 @@ All the statistics shoen in the table are from real indoor experiment flights of
 We evaluate the result by the \textit{right} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
 As we expect, if we use \textbf{only high} resolution mode we get the best performance but need the processor for large amount of the flight, in other hand \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
 
-In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold value of 10,20 and 30 cm respectively.
+In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold value of 10, 20 and 30cm respectively.
 Those schedulers demonstrate that even a simple scheduling change, that schedule the expensive image processing task only when it is \textbf{most needed}, improve the ``resources utilization rate'', scheduler number 3 achieve almost the same performance of the only high resolution scheduler but saves \textbf{half} of the CPU time.
 Schedulers automata 4 and 5 also provide that resources utilization but with different ``trade-offs''.
 
