@@ -157,7 +157,7 @@ fill=orange!20!yellow!20]
 
 \maketitle
 \begin{abstract}
-We present an approach to reactive scheduling of computations in software control systems. The main motivation comes form the growing use of computer vision algorithms in real-time, as sensors. The term reactive here refers to the ability of the scheduler to adapt the schedules dynamically based on physical conditions. We propose an extension of the automata based scheduling approach with an addition of guards to transitions that allow for reactive specifications. We develop a methodology for using Klman filters to provide data that guides these automata, and demonstrate the combined approach in simulations and with a case study. The case study is a development of a software that stabilizes a quadcopter in front of a window using a vision based sensor with a time-varying resolution, i.e., computation load is controlled by taking images in reduced resolution when the state of the controlled loop allows.
+We present an approach to reactive scheduling of computations in software control systems. The main motivation comes form the growing use of computer vision algorithms in real-time, as sensors. The term reactive here refers to the ability of the scheduler to adapt the schedules dynamically based on physical conditions. We propose an extension of the automata based scheduling approach with an addition of guards to transitions that allow for reactive specifications. We develop a methodology for using Kalman filters to provide data that guides these automata, and demonstrate the combined approach in simulations and with a case study. The case study is a development of a software that stabilizes a drone in front of a window using a vision based sensor with a time-varying resolution, i.e., computation load is controlled by taking images in reduced resolution when the state of the controlled loop allows.
 \end{abstract}
 
 \section{Introduction}
@@ -369,7 +369,6 @@ These values are used for controlling the roll angle and the altitude of the dro
 %\end{remark}
 
 As common in engineering practices, we pass these numbers to a filter that gives us a more informed state estimation. 
-%TODO : check if its realy shown there:
 In theory, as demonstrated in the simulation in Section~\ref{sec:simulation}, we should use Kalman filter estimator for best state estimation. As we deal with a non-linear system here, and because the process noise distribution is not known (it is significantly affected by the varying state of the battery), and because Kalman filter adds complexity in the code, we propose to use a complementary filter.
 A complementary filter is actually a steady-state Kalman filter for a certain class of filtering problems~\cite{complementaryVSKalman}.
 Specifically, in our case study, we implemented a two steps estimator that: (1) \textit{predicts} the current state evolved from the previous state (denoted by $\hat{x}_{k|k-1}$) using a linearized model of the system, and then \textit{updates} the prediction with current state measurement from the image, denoted by $y_k$.
@@ -377,7 +376,7 @@ The result of the estimation, denoted by $\hat{x}_{k|k}$, is a complementary fil
 $ \hat{x}_{k|k} = K \hat{x}_{k|k-1} + (1-K) C^{-1}y_k $ were $K$ is constant that equals the Kalman filter gain ($K_k$) at a steady-state.
 
 The image processing algorithms can run in different operation modes, each mode with different accuracy (see Section~\ref{sec:Analysis}).
-The constant $K$ represents the ratio between the variance of the process noise and the variance of the measurement noise. To achieve best peformace, we define a separate value of $K$ for each mode.
+The constant $K$ represents the ratio between the variance of the process noise and the variance of the measurement noise. To achieve best performance, we define a separate value of $K$ for each mode.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=80mm]{axis.jpg}}
@@ -641,12 +640,12 @@ In order to evaluate the performance, we needed to know the accurate position of
 consisting of an array of high-speed tracking cameras that provide low latency and high accuracy position and attitude tracking of the drone. The data from the \textit{OptiTrack} system is considered in this paper as the ground truth.
 
 \section{Conclusions and Future Work}
-We introduced a new approach of resource allocation that allows dynamic scheduling depending on the current state and needs of the system.
-We present reach interface between tasks and scheduler based on automata theory, that allows to define complex task requirements, and advice how to find those requirements.
-We also prove the contribution of dynamic scheduling in terms of control performance and resource utilization by computer simulation and with real practical case-study.
+We introduced a new approach for resource allocation that allows dynamic scheduling where resources are only allocated when needed.
 
-The use of automata allows to compose and analyze the scheduling characteristics, we plane to base on automata theory and hybrid automata theory to develop new techniques and tools for automatically generate task specification automata to meet the control requirement characteristics.
+We presented a compositional design strategy based on rich automata based interface between software components and the task scheduler. We also proposed how to use this design in the context of software control systems using the data provided by standard filters.
+We demonstrated the advantages of the resulting dynamic schedulers in terms of control performance and resource utilization. These advantages are demonstrated both in simulations and with a real case-study.
 
+The use of automata allows to compose and to analyze the scheduling characteristics. As future work, we plan to apply automata theory and, more specifically, the theory of hybrid automata to develop new techniques and tools for automata generation of specification automata. The input for this construction can be a specification of the dynamical system that we want to control and a specification of the required close-loop characteristics. 
 
 %ACKNOWLEDGMENTS are optional
 %\section*{Acknowledgments}
