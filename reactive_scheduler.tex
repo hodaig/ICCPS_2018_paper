@@ -400,7 +400,7 @@ The inertial (pitch and roll) feedback for the low level controller is generated
 
 Based on the \textit{principle of separation of estimation and control}, we can use that controller regardless of the measurement quality. We implemented a basic Proportional Integral Derivative (PID~\cite{aastrom2006advanced}) controller and tuned the parameters by tril and error using the highest resolution observer.
 
-%TODO - Hodai say: I think this figure is un-nesessary.
+
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=85mm]{two_level_controller.jpg}}
     \caption{Attitude and Position Controller - two level, cascaded, structure.}
@@ -456,7 +456,6 @@ The results show even better resource utilization.
     \label{fig:testPlot}
 \end{figure}
 
-%TODO - gyro derived?? more suggestions?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%% automata %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -623,10 +622,6 @@ This experiment further demonstrates our idea: resources are  allocated only whe
 \end{table}
 
 
-
-%TODO - continue here
-%TODO - hodai: i think this is considered Appendix
-%TODO - Gera: People move staff to appendices only if there is not enough room to put them in the body of the paper...
 \section{Experiment setup}
 \label{sec:Experiment setup}
 
