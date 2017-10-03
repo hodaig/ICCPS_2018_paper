@@ -417,37 +417,38 @@ We aim at taking resources (high CPU time) only when needed. By this, we will re
 Specifically in our case study, we switch between camera resolutions dynamically during the flight. The observer modes, discussed above, correspond to image resolutions (see Section~\ref{sec:Observer Design}).
 For simplicity, we consider in this paper only two modes: \textit{High quality} with resolution of 960p and \textit{Low quality} with resolution of 240p.
 
-Looking at the test results shown in Table~\ref{tab:results}, we see that the high quality observation mode provides mean error tolerance of 9.5\textit{cm}~\footnote{All lengths are measured in Centimeter.}  (in the $x$ axis) with the cost of 30\% CPU usage.
-On the other hand, the low quality mode provides mean error of 30\textit{cm} (three times the error obtained in the high quality mode) using only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average usage, and is calculates as ${\text{total time spend in image processing}}/{\text{total flight time}}$. }.
-We explain next how we defined an \textit{reactive scheduling specification} that combines the advantages of both modes.
+Looking at the test results shown in Table~\ref{tab:results}, we see that the high quality observation mode provides mean error tolerance of 9.5\textit{cm}~\footnote{All lengths are measured in centimeter.}  (in the $x$ axis) with the cost of 30\% CPU usage.
+On the other hand, the low quality mode provides mean error of 30\textit{cm} (three times the error obtained in the high quality mode) using only 2.1\% CPU usage~\footnote{The CPU usage percentage is the average: (total time spend in image processing)/(total flight time). }.
+
+We explain next several approaches we applied in the design of a \textit{reactive scheduling specification} that combines the advantages of both the high and the low resolution sensing modes .
 
 %displacement ($x_{k|k}$) schedulers
-We first examined a straight-forward solution based directly on the current position (the $x$ axis of $\hat{x}_{k|k}$). Using the simple guarded automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we defined a dynamic observer that chooses the operation mode (high or low quality) based on the absolute value of the $x$ part of $\hat{x}_{k|k}$. If the drone is closer to the center line of the window, denoted by $|x| < T_x$, we consider it as a ``safe'' state and go to $L$ mode that schedules the low quality image.
-Similarly, ``BAD'' states is considered when the drone is far, denoted by $|x| > T_x$. In this case, we use high quality image in order to ``fix'' the state.
-The threshold $T_x$ can be changed to define the desired performances and processing time trade-off.
-See Section~\ref{sec:results} for the data we collected by experiments to validate that this indeed achieves the desired goals. 
+We first examined a straight-forward scheduler based directly on the current position (the $x$ axis of $\hat{x}_{k|k}$). Using the simple guarded automaton $A_{x}$ presented in Figure~\ref{fig:test_automata}, we defined a dynamic observer that chooses the mode (high or low sensing quality) based on the absolute value of the $x$ axis of $\hat{x}_{k|k}$. If the drone is closer to the center line of the window, denoted by $|x| < T_x$, we consider it as a ``safe'' state and go to the mode called $L$ that schedules the low quality image.
+Similarly, a state is considered ``BAD'' when the drone is far, denoted by $|x| > T_x$. In this case, we take high quality images in order to ``fix'' the state.
+The threshold $T_x$ can be changed to tune the desired performances and processing time trade-off.
+See Section~\ref{sec:results} for the data we collected by experiments to validate that this indeed achieves the required goals. 
 % Results shows good improvement in term of resource utilization (see Section~\ref{sec:results}). 
 
 %error ($y_{k|k}$) schedulers
+In a second experiments set, we used the $A_{err}$ automaton presented in Figure~\ref{fig:test_automata}. This automaton is similar to $A_x$ with the difference that it switches states based on $\tilde{y}_{k|k}$ value  defined as:
+
 \begin{dfn}
-\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement ($C\hat{x}_{k|k}$) and the measured state ($y_k$): $\tilde{y}_{k|k} = |  \hat{x}_{k|k} - y_k |$~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
+\textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement, $C\hat{x}_{k|k}$, and the measured state, $y_k$,: $\tilde{y}_{k|k} = |  C\hat{x}_{k|k} - y_k |$.%~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
 
-From the Low quality experiment graph, shown in Figure~\ref{fig:testPlot}, we can see that $\tilde{y}_{k|k}$ accumulates proportional to the deviation from the center of the window (in the $x$ axis). This means that we can use $\tilde{y}_{k|k}$ values to predict high deviation from $x$.
+The motivation to use this indicator comes form looking at the Low quality experiment graph, shown in Figure~\ref{fig:testPlot}. We can see that $\tilde{y}_{k|k}$ growth is proportional to the deviation from the center of the window (in the $x$ axis). We can also see that the growth in $\tilde{y}_{k|k}$ precedes the growth in $x$. This means that we can use $\tilde{y}_{k|k}$ values to predict deviations in $x$.
 
-In the second experiments set we used the $A_{err}$ automaton presented in Figure~\ref{fig:test_automata}. This automaton is similar to $A_x$ with the difference that it switches states based on $\tilde{y}_{k|k}$ value.
-In this case the observer operates in low quality when $\tilde{y}_{k|k} < T_{l}$ (``GOOD'' state) and switches to high quality when $\tilde{y}_{k|k} > T_{h}$ (``BAD'' state).
-The thresholds $T_{l}$ and $T_{h}$ were initially taken from the low and the high quality graphs and the were fine tuned by experiments. 
+
+In $A_{err}$ the observer operates in low quality when $\tilde{y}_{k|k} < T_{l}$ (``GOOD'' state) and switches to high quality when $\tilde{y}_{k|k} > T_{h}$ (``BAD'' state).
+The thresholds $T_{l}$ and $T_{h}$ were initially taken from the low and the high quality graphs and fine tuned by experiments. 
 Different $T_{l}$ and $T_{h}$ give different trade-offs of performances and processing time.
-In Section~\ref{sec:results} we show that this dynamic observer gives almost the same performance as the high quality observer with a reduction of a factor of $\frac{1}{2}$ in the processing time.
+In Section~\ref{sec:results} we show that this dynamic observer gives almost the same performance as the high quality observer with a reduction of a factor of two in the processing load.
 
 %complex / agregated schedulers (3-4 states)
 The expressiveness of automata allows for creating even more complex scheduling specification. We can, for example, combine the approaches of both $A_{err}$ and $A_{x}$.
-In Figure~\ref{fig:test_automata} there is two examples of such combinations. $A_{comp1}$ tries to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center, by using only low quality, and activates $A_{err}$ only if the drone goes far from the center ($T_{x}$cm from the origin).
-$A_{comp2}$ adds another constraint: if the drone goes even farther away ($T_{x2}$cm from the origin) use only high resolution to bring it back to safety.
+In Figure~\ref{fig:test_automata} there is two examples of such combinations. $A_{comp1}$ tries to save unnecessary CPU usage while the drone is in ``safe'' state, close to the center. It activates $A_{err}$ only if the drone goes far from the center ($T_{x}$cm from the origin).
+$A_{comp2}$ adds another constraint: if the drone goes even farther away ($T_{x2}$cm from the origin) it schedules only high resolution to bring it back to safety.
 The results show even better resource utilization.
-%TODO - hodai: why not resource utilization?
-%The results show even better trade-offs with these automata.
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=90mm]{errorVsPosition.jpg}}
