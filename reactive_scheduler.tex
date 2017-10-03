@@ -581,6 +581,7 @@ Testing the more complex schedulers can contribute even more to the performance 
 The methodology we are proposing is to tune the thresholds and to enrich the automata, as we did, until satisfactory CPU utilization and performance are achieved.
 
 %TODO - reactive with wind - need to extract info from matlab
+%TODO - Gera: I think that a graph that shows how CPU load increased only when there was wind can help us here :-)
 Another advantage we achieved using the dynamic schedulers, beyond improving allowing better performance to computation load balance, is reactiveness. The  scheduling scheme we are proposing allows the system to adapts itself to changes in environmental conditions, demonstrated as follows.
 We experimented in exposing the flying drone to time-varying wind conditions. 
 Specifically, we created artificial wind by turning  on a fan while the drone was flying. The scheduler was the $A_{err}$ automaton with the thresholds values $T_l=10$ , $T_h=15$ (number~7 in Table~\ref{tab:results}).
