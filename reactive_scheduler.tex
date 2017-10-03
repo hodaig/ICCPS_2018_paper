@@ -144,16 +144,15 @@ fill=orange!20!yellow!20]
 % affiliation/address with \affaddr, and tag the
 % e-mail address with \email.
 %
-% 1st. author
-    \alignauthor Gera Weiss\\
-       \affaddr{Ben-Gurion University}\\
-       \affaddr{Beer-Sheva, Israel}\\
-       \email{geraw@cs.bgu.ac.il}
-% 2th. author
     \alignauthor Hodai Goldman\\
         \affaddr{Ben-Gurion University}\\
         \affaddr{Beer-Sheva, Israel}\\
         \email{hodaig@cs.bgu.ac.il}
+%
+    \alignauthor Gera Weiss\\
+		\affaddr{Ben-Gurion University}\\
+		\affaddr{Beer-Sheva, Israel}\\
+		\email{geraw@cs.bgu.ac.il}
 }
 
 \maketitle
@@ -351,7 +350,7 @@ The part of the controller that we focused on is the vision based position contr
 
 \subsection{Observer Design}
 \label{sec:Observer Design}
-We first implemented an observer based on the work of Efraim at al.~\cite{?? Dynamic Image Based Visual Servo Control of Micro Aerial Vehicles Relative to a Window}. The observer gets the positions of the widow corners from the image (see Section~\ref{sec:Experiment setup} for more details), %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
+We first implemented an observer based on the work of Efraim~\cite{Efraim17}. The observer gets the positions of the widow corners from the image (see Section~\ref{sec:Experiment setup} for more details), %enumerated clockwise starting from the top left corner noted by $p_1,p_2,p_3,p_4$, 
 and extracts the following four quantities based on the shape and location of the window corners in the image plane: %$S_x$, $S_y$, $V_d$ and $sz$, as follows.
 \textbf{Center of mass:} $S_x$ and $S_y$ represent the window ``center of mass'' along the $x$ and $y$ axes of the image, respectively, normalized to the range of $[-1,1]$.
 These values are used for controlling the roll angle and the altitude of the drone, respectively. 
@@ -382,7 +381,7 @@ The constant $K$ represents the ratio between the variance of the process noise 
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=80mm]{axis.jpg}}
-    \caption{Description of Coordinate System and Rotation Axis.}
+    \caption{The coordinate system and the rotation axes of the drone.}
     \label{fig:axis}
 \end{figure}
 
@@ -402,7 +401,7 @@ Based on the \textit{principle of separation of estimation and control}, we can 
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=85mm]{two_level_controller.jpg}}
-    \caption{Attitude and Position Controller - two level, cascaded, structure.}
+    \caption{Attitude and position controller consisting of a two level, cascaded, structure.}
     \label{fig:controllerStracture}
 \end{figure}
 
@@ -435,7 +434,7 @@ In a second experiments set, we used the $A_{err}$ automaton presented in Figure
 \textit{Measurement post-fit residual} $\tilde{y}_{k|k}$, is the difference between the expected measurement, $C\hat{x}_{k|k}$, and the measured state, $y_k$,: $\tilde{y}_{k|k} = |  C\hat{x}_{k|k} - y_k |$.%~\footnote{ Measurement post-fit residual $\tilde{y}_{k|k}$ is also defined by the Kalman filter.}.
 \end{dfn}
 
-The motivation to use this indicator comes form looking at the Low quality experiment graph, shown in Figure~\ref{fig:testPlot}. We can see that $\tilde{y}_{k|k}$ growth is proportional to the deviation from the center of the window (in the $x$ axis). We can also see that the growth in $\tilde{y}_{k|k}$ precedes the growth in $x$. This means that we can use $\tilde{y}_{k|k}$ values to predict deviations in $x$.
+The motivation to use this indicator comes form looking at the low quality experiment graph, shown in Figure~\ref{fig:testPlot}. We can see that $\tilde{y}_{k|k}$ growth is proportional to the deviation from the center of the window (in the $x$ axis). We can also see that the growth in $\tilde{y}_{k|k}$ precedes the growth in $x$. This means that we can use $\tilde{y}_{k|k}$ values to predict deviations in $x$.
 
 
 In $A_{err}$ the observer operates in low quality when $\tilde{y}_{k|k} < T_{l}$ (``GOOD'' state) and switches to high quality when $\tilde{y}_{k|k} > T_{h}$ (``BAD'' state).
@@ -550,9 +549,9 @@ The results show even better resource utilization.
     \end{tabular}
     
     \caption{The main Automata we used for the requirements specifications in the experiments. 
-        \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then next iteration will use small resolution image ($L$), and if too large the high resolution will be used, $T_l$ and $T_h$ are the transition thresholds.
-        \newline $A_x$ operate similar to $A_{err}$ but uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead $\tilde{y}_{k|k}$, with the threshold $T_x$.
-        \newline $A_{comp1}$ and $A_{comp2}$ are the results of composing the $A_{err}$ and $A_x$ ideas.}
+        \newline $A_{err}$ uses the \textit{measurement post-fit residual} ($\tilde{y}_{k|k}$), if $|\tilde{y}_{k|k}|$ is too small then the next iteration will use small resolution image ($L$), and if it is too large the high resolution will be used, $T_l$ and $T_h$ are the transition thresholds.
+         $A_x$ operates similar to $A_{err}$, only it uses the current position (the $x$ part of $\hat{x}_{k|k}$) instead of $\tilde{y}_{k|k}$, with the threshold $T_x$.
+         $A_{comp1}$ and $A_{comp2}$ area composition of the ideas in $A_{err}$ and in $A_x$.}
     
     \label{fig:test_automata}
 \end{figure}
@@ -570,21 +569,18 @@ All the statistics shown in the table are from real indoor experiment flights. E
 We see that, using reactive scheduling methods, we can adjust the trade-off between performance and CPU usage. As expected, if we use \textbf{only high} resolution mode we get the best performance but need much \%CPU. On other hand, the \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
 
 In Table~\ref{tab:results}, automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold values of 10, 20 and 30cm respectively.
-Those schedulers demonstrate that even a simple scheduling scheme, that schedules the expensive image processing task only when it is most needed, improve the performance. Scheduler number 3 achieves almost the same performance as the only high resolution scheduler but saves half of the CPU time. Schedulers automata 4 and 5 provide different trade-offs.
+Those schedulers demonstrate that even a simple scheduling scheme, that schedules the expensive image processing task only when it is most needed, improves the performance. Scheduler number 3 achieves almost the same performance as the only high resolution scheduler but saves half of the CPU time. Schedulers automata 4 and 5 provide different trade-offs.
 
-The $A_{err}$ automaton (shown in Figure~\ref{fig:test_automata}), that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
+The $A_{err}$ automaton (shown in Figure~\ref{fig:test_automata}), which bases its transitions on $\tilde{y}_{k|k}$, appears to be even more effective.
 We tested this automaton with ($T_l=10 , T_h=20$) and ($T_l=10 , T_h=15$) thresholds as shown by schedulers 6 and 7 respectively in Table~\ref{tab:results}.
 They are using even less CPU time but still achieve fairly impressive performance.
-Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit better resource utilization.
+The more complex schedulers contribute even more to the performance and utilization. Scheduler $A_{comp1}$ for example achieves a little better resource utilization.
 The methodology we are proposing is to tune the thresholds and to enrich the automata, as we did, until satisfactory CPU utilization and performance are achieved.
 
 Another advantage we achieved using the dynamic schedulers, beyond improving allowing better performance to computation load balance, is reactiveness. The  scheduling scheme we are proposing allows the system to adapts itself to changes in environmental conditions, demonstrated as follows.
 We experimented in exposing the flying drone to time-varying wind conditions. 
-Specifically, we created artificial wind by turning  on a fan while the drone was flying. The scheduler was the $A_{err}$ automaton with the thresholds values $T_l=10$ , $T_h=15$ (number~7 in Table~\ref{tab:results}).
-Figure~\ref{fig:windPlot} shows an experiment flight with the CPU usage along the flight where the first part of the flight, colored in blue, is indoor flight without any external wind, and during the rest of the flight we can see increasing CPU usage, colored in red, that is the scheduler respond to the wind disturbance.
-In this experiment the mean displacement ($mean(|x|$) was 11.8cm which is very close to the displacement without the wind, and the average CPU usage was 13.2\%, instead of 11.7\% usage without the wind.
-This experiment further demonstrates our idea: resources are  allocated only when needed.
-
+Specifically, we created artificial wind by turning  on a fan while the drone was flying. The scheduler was the $A_{err}$ automaton with the thresholds $T_l=10$ and $T_h=15$ (number~7 in Table~\ref{tab:results}).
+Figure~\ref{fig:windPlot} shows data collected in one of the flights with the CPU usage and the displacement of the drone along the flight. The first part of the flight, colored in blue, is indoor flight without any external wind. The second part, colored in red, is a flight with the disturbance caused by the wind of the fan. We can clearly see increasing CPU usage when there is wind. We can also see that the wind does not effect the disturbance, as the increased accuracy of th sensor compensates for it. The mean displacement ($mean(|x|$) in this experiment was 11.8cm which is very close to the displacement without the wind, and the average CPU usage increased to  13.2\% from 11.7\%. This experiment further demonstrates our idea: resources can be allocated only when needed.
 
 \begin{table}[htbp]
     \caption{Test Results}
@@ -623,7 +619,7 @@ This experiment further demonstrates our idea: resources are  allocated only whe
 
 \begin{figure}[htbp]
     \centerline{\includegraphics[width=90mm]{windPlot15.jpg}}
-    \caption{This figure demonstrates how the reactive scheduler adapt to the environment changes, in particular, to change of the wind. The upper part shows the average CPU usage during the flight, and the bottom is the true position at the same time. The first part of the flight (the left Blue graph) is without any external wind and in the rest of the flight (right red graph)  the drone was expose to artificial wind. See that the flight exposed to wind use more CPU to overcome the wind disturbance. }
+    \caption{This figure demonstrates how the reactive scheduler adapt to the environment changes, in particular, to change of the wind. The upper part shows the average CPU usage during the flight, and the bottom is the true position at the same time. The first part of the flight (the left Blue graph) is without any external wind and in the rest of the flight (right red graph)  the drone was exposed to artificial wind (using a fan). Note that when the drone is exposed to wind it uses more CPU to compensate for the disturbance.}
     \label{fig:windPlot}
 \end{figure}
 
