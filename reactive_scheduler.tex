@@ -581,12 +581,11 @@ Testing the more complex schedulers can contribute even more to the performance 
 The methodology we are proposing is to tune the thresholds and to enrich the automata, as we did, until satisfactory CPU utilization and performance are achieved.
 
 %TODO - reactive with wind - need to extract info from matlab
-Another advantage we achieved from using the dynamic schedulers is a different type of reactiveness, the schedule profile adapts itself to changes in environmental conditions, in order to maintain the performance.
-We experiment this ability by introducing the flying drone to wind. 
-We create artificial wind by turn on a fan while the drone is flying using the $A_{err}$ automaton and the thresholds values $T_l=10$ , $T_h=15$ (number~7 in Table~\ref{tab:results}).
+Another advantage we achieved using the dynamic schedulers, beyond improving allowing better performance to computation load balance, is reactiveness. The  scheduling scheme we are proposing allows the system to adapts itself to changes in environmental conditions, demonstrated as follows.
+We experimented in exposing the flying drone to time-varying wind conditions. 
+Specifically, we created artificial wind by turning  on a fan while the drone was flying. The scheduler was the $A_{err}$ automaton with the thresholds values $T_l=10$ , $T_h=15$ (number~7 in Table~\ref{tab:results}).
 In this experiment the mean displacement ($mean(|x|$) was 11.8cm which is very close to the displacement without the wind, and the average CPU usage was 13.2\%, instead of 11.7\% usage without the wind.
-This experiment best demonstrate our statement, that resources is allocated only when is needed.
-
+This experiment further demonstrates our idea: resources are  allocated only when needed.
 
 
 \begin{table}[htbp]
@@ -624,12 +623,9 @@ This experiment best demonstrate our statement, that resources is allocated only
 
 
 
-
-
-
-
 %TODO - continue here
 %TODO - hodai: i think this is considered Appendix
+%TODO - Gera: People move staff to appendices only if there is not enough room to put them in the body of the paper...
 \section{Experiment setup}
 \label{sec:Experiment setup}
 
