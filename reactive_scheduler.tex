@@ -630,21 +630,18 @@ This experiment further demonstrates our idea: resources are  allocated only whe
 \section{Experiment setup}
 \label{sec:Experiment setup}
 
-In order to perform the experiments we used of-the-shelf quad rotor with \textit{navio2} and \textit{Raspberry pi}~\cite{pi2013raspberry} flight controller that runs a modified ArduPilotMega (APM) software.
-ArduPilot Mega (APM) is an open source unmanned vehicle autopilot software suite~(\url{ardupilot.org}).
-\textit{Navio2} (\url{emlid.com/introducing-navio2}) is extension board (shield) for the \textit{Raspberry pi} platform, it provides the nessesary interfaces such as remote control inputs and motors output, and it's equipped with on-board Micro Electro
-Mechanical System (MEMS) sensors, specifically, rate gyros and accelerometers.
-We used the standard raspberry pi camera. % and modified driver for eficient recording in 
+In order to perform the experiments we used an of-the-shelf quadrotor with a \textit{raspberry-pi}~\cite{pi2013raspberry} board with the \textit{navio2}~\url{emlid.com/navio/} shield. We implemented the controllers and the schedulers as libraries for the ArduPilot Mega (APM) autopilot software.
+%ArduPilot Mega (APM) is an open source unmanned vehicle autopilot software suite~(\url{ardupilot.org}).
+%\textit{Navio2} (\url{emlid.com/introducing-navio2}) is extension board (shield) for the \textit{Raspberry pi} platform, it provides the nessesary interfaces such as remote control inputs and motors output, and it's equipped with on-board Micro Electro
+%Mechanical System (MEMS) sensors, specifically, rate gyros and accelerometers.
 
-%the window
-The camera frame rate is always 30 frames per second, and before taking each picture the scheduler define the operation resolution of the camera.
-In order to simplify the image processing algorithm, we simplify the problem by ``marking'' the four corners of the window with four illuminated balls.
-The algorithm search for all the pixels of the illuminated balls and calculate the ``center of mass'' of all those pixels as a window corner.
-Higher resolution lead to more accurate measurement of corner ``center of mass''.
+We used the standard raspberry-pi camera with a modified driver to allow for dynamic resolution switching. % and modified driver for eficient recording in the window
+%The camera frame rate is always 30 frames per second, and before taking each picture the scheduler defined the operation resolution of the camera.
+In order to simplify the image processing algorithm, we marked the four corners of the window with four illuminated balls. This allowed us to apply a simple minded corner detection algorithm: 
+look for a blob of burned pixels and calculate the ``center of mass'' of all those pixels as a window corner. Higher resolution give us to a more accurate measurement of corner ``center of mass''.
 
-In order to evaluate the performance we need to know the acurate position of the drone during the flight, we use a system called \textit{OptiTrack} (\url{optitrack.com}).
-\textit{OptiTrack} is a network of high-speed tracking cameras, it provides low latency and high accuracy position and attitude tracking of the drone.
-We use \textit{OptiTrack} as the ground truth.
+In order to evaluate the performance, we needed to know the accurate position of the drone during the flight. For this purpose, we used the \textit{OptiTrack} (\url{optitrack.com}) system 
+consisting of an array of high-speed tracking cameras that provide low latency and high accuracy position and attitude tracking of the drone. The data from the \textit{OptiTrack} system is considered in this paper as the ground truth.
 
 \section{Conclusions and Future Work}
 Conclusion goes here.
