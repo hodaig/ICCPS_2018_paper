@@ -564,29 +564,26 @@ The results show even better resource utilization.
 \subsection{Results}
 \label{sec:results}
 
-Table~\ref{tab:results} summarizes the result of flight experiments made using the specification automata described in Section~\ref{sec:Analysis}.
-The first column ``\% CPU'' represent processing time usage by image processing task, and is calculates as 
-$$\frac{\text{total time spend in image processing}}{\text{total flight time}}.$$
-The second column ``$mean(|$x$|)$'' is the average distance of the drone from the origin in the $x$ coordinate, the real $x$ position of the drone is monitored using \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and presented in centimeter units.
-All the statistics shown in the table are from real indoor experiment flights of between one and two minutes.
+Table~\ref{tab:results} summarizes the result of the flights experiments made using the specification automata described in Section~\ref{sec:Analysis}.
+The first column ``\% CPU'' represents processing time usage by the image processing task.
+The second column ``$mean(|$x$|)$'' is the average distance of the drone from the origin in centimeters.
+All the statistics shown in the table are from real indoor experiment flights. Each experiment consists of a flight (between one and two minutes) recorded using an \textit{OptiTrack} system (see Section~\ref{sec:Experiment setup}) and data from the software itself.
 
-We show that by applying reactive scheduling methods we can control the \textit{desire} ``trade-off'' between performance and CPU usage, but the main goal is to chive the best ``resources utilization rate'', this mean using \textbf{less CPU for the same level of performance}.
-As we expect, if we use \textbf{only high} resolution mode we get the best performance but need the processor for large amount of the flight, in other hand \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
+We see that, using reactive scheduling methods, we can adjust the trade-off between performance and CPU usage. As expected, if we use \textbf{only high} resolution mode we get the best performance but need much \%CPU. On other hand, the \textbf{only low} resolution mode barely use the processor but the performance are low and unsatisfying for indoor flights.
 
-In Table~\ref{tab:results} schedulers automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold values of 10, 20 and 30cm respectively.
-Those schedulers demonstrate that even a simple scheduling change, that schedule the expensive image processing task only when it is \textbf{most needed}, improve the ``resources utilization rate'', scheduler number 3 achieve almost the same performance of the only high resolution scheduler but saves \textbf{half} of the CPU time.
-Schedulers automata 4 and 5 also provide that resources utilization but with different ``trade-offs''.
+In Table~\ref{tab:results}, automata number 3,4 and 5 are the implementation of $A_{x}$ automaton as describe in Section~\ref{sec:Analysis} with the threshold values of 10, 20 and 30cm respectively.
+Those schedulers demonstrate that even a simple scheduling scheme, that schedules the expensive image processing task only when it is most needed, improve the performance. Scheduler number 3 achieves almost the same performance as the only high resolution scheduler but saves half of the CPU time. Schedulers automata 4 and 5 provide different trade-offs.
 
-The $A_{err}$ Automata schedulers (shown in Figure~\ref{fig:test_automata}) that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
-We test the scheduler with ($T_l=10 , T_h=20$) and ($T_l=10 , T_h=15$) thresholds as shown by schedulers 6 and 7 respectively in Table~\ref{tab:results}.
-They have using even less CPU time but still achieve fairly impressive performance.
-Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit grader resource utilization.
-This work of tuning the thresholds and enrich the automata can always continue and improve the utilization and performance.
+The $A_{err}$ automaton (shown in Figure~\ref{fig:test_automata}), that is based on $\tilde{y}_{k|k}$, appears to be even more effective.
+We tested this automaton with ($T_l=10 , T_h=20$) and ($T_l=10 , T_h=15$) thresholds as shown by schedulers 6 and 7 respectively in Table~\ref{tab:results}.
+They are using even less CPU time but still achieve fairly impressive performance.
+Testing the more complex schedulers can contribute even more to the performance and utilization, scheduler $A_{comp1}$ for example achieve a bit better resource utilization.
+The methodology we are proposing is to tune the thresholds and to enrich the automata, as we did, until satisfactory CPU utilization and performance are achieved.
 
 %TODO - reactive with wind - need to extract info from matlab
 Another advantage we achieved from using the dynamic schedulers is a different type of reactiveness, the schedule profile adapts itself to changes in environmental conditions, in order to maintain the performance.
 We experiment this ability by introducing the flying drone to wind. 
-We create artificial wind by turn on a fan while the drone is flying using the $A_{err}$ automaton and the thresholds values $T_l=10$ , $T_h=15$ (number 7 in Table~\ref{tab:results}).
+We create artificial wind by turn on a fan while the drone is flying using the $A_{err}$ automaton and the thresholds values $T_l=10$ , $T_h=15$ (number~7 in Table~\ref{tab:results}).
 In this experiment the mean displacement ($mean(|x|$) was 11.8cm which is very close to the displacement without the wind, and the average CPU usage was 13.2\%, instead of 11.7\% usage without the wind.
 This experiment best demonstrate our statement, that resources is allocated only when is needed.
 
